@@ -63,9 +63,17 @@ const foodSchema = new mongoose.Schema(
       type: Number,
       default: 4.5,
     },
+    initialRating: {
+      type: Number,
+      default: 4.5,
+    },
     reviewsCount: {
       type: Number,
-      default: 0,
+      default: 1,
+    },
+    initialReviewsCount: {
+      type: Number,
+      default: 1,
     },
     prepTime: {
       type: String,

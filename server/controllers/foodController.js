@@ -81,12 +81,19 @@ export const getFoodById = async (req, res) => {
 
 export const createFood = async (req, res) => {
   try {
-    const { name, category, price, description, image, ingredients, prepTime, isPopular, isFeatured } = req.body;
+    const { name, category, price, rating, reviewsCount, description, image, ingredients, prepTime, isPopular, isFeatured } = req.body;
+
+    const initialR = Number(rating) || 4.5;
+    const initialC = Number(reviewsCount) || 1;
 
     const food = new Food({
       name,
       category: category ? category.toLowerCase() : "pizza",
       price: Number(price) || 0,
+      rating: initialR,
+      initialRating: initialR,
+      reviewsCount: initialC,
+      initialReviewsCount: initialC,
       description,
       image,
       ingredients: Array.isArray(ingredients)
@@ -120,10 +127,15 @@ export const updateFood = async (req, res) => {
     }
 
     if (!food) {
+      const initialR = Number(req.body.rating) || 4.5;
       food = new Food({
         name: req.body.name || "New Item",
         category: (req.body.category || "pizza").toLowerCase(),
         price: Number(req.body.price) || 199,
+        rating: initialR,
+        initialRating: initialR,
+        reviewsCount: 1,
+        initialReviewsCount: 1,
         description: req.body.description || "Freshly prepared dish.",
         image: req.body.image || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
         ingredients: Array.isArray(req.body.ingredients)
@@ -140,6 +152,10 @@ export const updateFood = async (req, res) => {
       food.description = req.body.description || food.description;
       food.image = req.body.image || food.image;
       food.prepTime = req.body.prepTime || food.prepTime;
+      if (req.body.rating !== undefined) {
+        food.rating = Number(req.body.rating);
+        food.initialRating = Number(req.body.rating);
+      }
       if (req.body.ingredients !== undefined) {
         food.ingredients = Array.isArray(req.body.ingredients)
           ? req.body.ingredients
@@ -207,10 +223,13 @@ export const addComment = async (req, res) => {
 
     food.comments.unshift(newComment);
 
-    // Recalculate average rating & reviewsCount
-    const totalRatings = food.comments.reduce((acc, c) => acc + c.rating, 0);
-    food.reviewsCount = food.comments.length;
-    food.rating = Number((totalRatings / food.comments.length).toFixed(1));
+    // Weighted average rating calculation
+    const initRating = food.initialRating !== undefined ? food.initialRating : (food.rating || 4.5);
+    const initCount = food.initialReviewsCount !== undefined ? food.initialReviewsCount : 1;
+    const commentsSum = food.comments.reduce((acc, c) => acc + c.rating, 0);
+
+    food.reviewsCount = initCount + food.comments.length;
+    food.rating = Number(((initRating * initCount + commentsSum) / food.reviewsCount).toFixed(1));
 
     await food.save();
 
@@ -232,10 +251,16 @@ export const toggleLikeComment = async (req, res) => {
       food = await Food.findById(id);
     }
     if (!food) {
+      food = await Food.findOne({ name: { $regex: id, $options: "i" } });
+    }
+    if (!food) {
       return res.status(404).json({ message: "Food item not found" });
     }
 
-    const comment = food.comments.id(commentId);
+    const comment = food.comments.find(
+      (c) => c._id.toString() === commentId.toString() || (c.id && c.id.toString() === commentId.toString())
+    );
+
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }
@@ -274,10 +299,16 @@ export const toggleDislikeComment = async (req, res) => {
       food = await Food.findById(id);
     }
     if (!food) {
+      food = await Food.findOne({ name: { $regex: id, $options: "i" } });
+    }
+    if (!food) {
       return res.status(404).json({ message: "Food item not found" });
     }
 
-    const comment = food.comments.id(commentId);
+    const comment = food.comments.find(
+      (c) => c._id.toString() === commentId.toString() || (c.id && c.id.toString() === commentId.toString())
+    );
+
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
     }

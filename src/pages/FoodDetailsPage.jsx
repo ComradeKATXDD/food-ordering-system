@@ -96,9 +96,34 @@ const FoodDetailsPage = () => {
       return;
     }
 
+    const currentUserId = user?.id || user?._id;
+    if (!currentUserId) return;
+
+    // Optimistic UI update
+    setFood((prevFood) => {
+      if (!prevFood) return prevFood;
+      const updatedComments = (prevFood.comments || []).map((c) => {
+        const cId = c._id || c.id;
+        if (cId === commentId) {
+          const likes = [...(c.likes || [])];
+          const dislikes = [...(c.dislikes || [])];
+          const lIdx = likes.findIndex((id) => (id._id || id) === currentUserId || id === currentUserId);
+          const dIdx = dislikes.findIndex((id) => (id._id || id) === currentUserId || id === currentUserId);
+
+          if (dIdx > -1) dislikes.splice(dIdx, 1);
+          if (lIdx > -1) likes.splice(lIdx, 1);
+          else likes.push(currentUserId);
+
+          return { ...c, likes, dislikes };
+        }
+        return c;
+      });
+      return { ...prevFood, comments: updatedComments };
+    });
+
     try {
       const updatedFood = await foodService.likeComment(food.id || food._id, commentId);
-      setFood(updatedFood);
+      if (updatedFood) setFood(updatedFood);
     } catch (err) {
       console.error("Like failed", err);
     }
@@ -111,9 +136,34 @@ const FoodDetailsPage = () => {
       return;
     }
 
+    const currentUserId = user?.id || user?._id;
+    if (!currentUserId) return;
+
+    // Optimistic UI update
+    setFood((prevFood) => {
+      if (!prevFood) return prevFood;
+      const updatedComments = (prevFood.comments || []).map((c) => {
+        const cId = c._id || c.id;
+        if (cId === commentId) {
+          const likes = [...(c.likes || [])];
+          const dislikes = [...(c.dislikes || [])];
+          const lIdx = likes.findIndex((id) => (id._id || id) === currentUserId || id === currentUserId);
+          const dIdx = dislikes.findIndex((id) => (id._id || id) === currentUserId || id === currentUserId);
+
+          if (lIdx > -1) likes.splice(lIdx, 1);
+          if (dIdx > -1) dislikes.splice(dIdx, 1);
+          else dislikes.push(currentUserId);
+
+          return { ...c, likes, dislikes };
+        }
+        return c;
+      });
+      return { ...prevFood, comments: updatedComments };
+    });
+
     try {
       const updatedFood = await foodService.dislikeComment(food.id || food._id, commentId);
-      setFood(updatedFood);
+      if (updatedFood) setFood(updatedFood);
     } catch (err) {
       console.error("Dislike failed", err);
     }
@@ -314,13 +364,14 @@ const FoodDetailsPage = () => {
             </div>
           ) : (
             comments.map((comment) => {
+              const commentId = comment._id || comment.id;
               const currentUserId = user?.id || user?._id;
-              const hasLiked = comment.likes?.some((uid) => uid === currentUserId || uid?._id === currentUserId);
-              const hasDisliked = comment.dislikes?.some((uid) => uid === currentUserId || uid?._id === currentUserId);
+              const hasLiked = comment.likes?.some((uid) => (uid._id || uid) === currentUserId || uid === currentUserId);
+              const hasDisliked = comment.dislikes?.some((uid) => (uid._id || uid) === currentUserId || uid === currentUserId);
 
               return (
                 <div
-                  key={comment._id || comment.id}
+                  key={commentId}
                   className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm"
                 >
                   <div className="flex items-center justify-between gap-4">
@@ -353,8 +404,9 @@ const FoodDetailsPage = () => {
                   {/* Likes / Dislikes Action Buttons */}
                   <div className="flex items-center gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-xs">
                     <button
-                      onClick={() => handleLikeComment(comment._id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition ${
+                      type="button"
+                      onClick={() => handleLikeComment(commentId)}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition active:scale-95 ${
                         hasLiked
                           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-emerald-500"
@@ -364,8 +416,9 @@ const FoodDetailsPage = () => {
                     </button>
 
                     <button
-                      onClick={() => handleDislikeComment(comment._id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition ${
+                      type="button"
+                      onClick={() => handleDislikeComment(commentId)}
+                      className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition active:scale-95 ${
                         hasDisliked
                           ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-700"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-rose-500"

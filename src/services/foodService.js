@@ -21,7 +21,7 @@ const saveFoods = (foodsList) => {
   localStorage.setItem(FOODS_KEY, JSON.stringify(foodsList));
 };
 
-const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
+let cachedCategories = null;
 
 export const foodService = {
   async getFoods({ category, search, minPrice, maxPrice, minRating, sortBy } = {}) {
@@ -39,10 +39,9 @@ export const foodService = {
         return await res.json();
       }
     } catch {
-      // Backend offline fallback to local data
+      // Offline fallback
     }
 
-    await delay(200);
     let result = [...getStoredFoods()];
 
     if (category && category !== "all") {
@@ -96,7 +95,6 @@ export const foodService = {
       // Fallback
     }
 
-    await delay(200);
     const all = getStoredFoods();
     const found = all.find((item) => item.id === id || item._id === id);
     if (!found) throw new Error("Food item not found");
@@ -104,16 +102,18 @@ export const foodService = {
   },
 
   async getCategories() {
+    if (cachedCategories) return cachedCategories;
     try {
       const res = await fetch(`${API_URL}/categories`);
       if (res.ok) {
-        return await res.json();
+        cachedCategories = await res.json();
+        return cachedCategories;
       }
     } catch {
       // Fallback
     }
 
-    await delay(150);
+    cachedCategories = initialCategories;
     return initialCategories;
   },
 
@@ -155,7 +155,6 @@ export const foodService = {
       }
     }
 
-    await delay(300);
     const current = getStoredFoods();
     const newFood = {
       ...foodData,
@@ -215,7 +214,6 @@ export const foodService = {
       }
     }
 
-    await delay(300);
     const current = getStoredFoods();
     const index = current.findIndex((item) => item.id === id || item._id === id);
     if (index === -1) {
@@ -261,7 +259,6 @@ export const foodService = {
       // Fallback
     }
 
-    await delay(300);
     const current = getStoredFoods();
     const updated = current.filter((item) => item.id !== id && item._id !== id);
     saveFoods(updated);
@@ -290,7 +287,6 @@ export const foodService = {
       }
     }
 
-    await delay(300);
     const current = getStoredFoods();
     const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
     if (idx !== -1) {
@@ -307,7 +303,11 @@ export const foodService = {
         createdAt: new Date().toISOString(),
       };
       current[idx].comments = [newC, ...comments];
-      current[idx].reviewsCount = current[idx].comments.length;
+      const initR = current[idx].initialRating || current[idx].rating || 4.5;
+      const initC = current[idx].initialReviewsCount || 1;
+      const cSum = current[idx].comments.reduce((acc, c) => acc + c.rating, 0);
+      current[idx].reviewsCount = initC + current[idx].comments.length;
+      current[idx].rating = Number(((initR * initC + cSum) / current[idx].reviewsCount).toFixed(1));
       saveFoods(current);
       return current[idx];
     }
@@ -330,10 +330,22 @@ export const foodService = {
       // Fallback
     }
 
-    await delay(200);
     const current = getStoredFoods();
     const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
     if (idx !== -1) {
+      const currentUser = JSON.parse(localStorage.getItem("food_ordering_user") || "{}");
+      const userId = currentUser.id || currentUser._id || "local-user";
+      const comment = (current[idx].comments || []).find((c) => c._id === commentId || c.id === commentId);
+      if (comment) {
+        if (!comment.likes) comment.likes = [];
+        if (!comment.dislikes) comment.dislikes = [];
+        const lIdx = comment.likes.indexOf(userId);
+        const dIdx = comment.dislikes.indexOf(userId);
+        if (dIdx > -1) comment.dislikes.splice(dIdx, 1);
+        if (lIdx > -1) comment.likes.splice(lIdx, 1);
+        else comment.likes.push(userId);
+        saveFoods(current);
+      }
       return current[idx];
     }
     throw new Error("Food item not found");
@@ -355,10 +367,22 @@ export const foodService = {
       // Fallback
     }
 
-    await delay(200);
     const current = getStoredFoods();
     const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
     if (idx !== -1) {
+      const currentUser = JSON.parse(localStorage.getItem("food_ordering_user") || "{}");
+      const userId = currentUser.id || currentUser._id || "local-user";
+      const comment = (current[idx].comments || []).find((c) => c._id === commentId || c.id === commentId);
+      if (comment) {
+        if (!comment.likes) comment.likes = [];
+        if (!comment.dislikes) comment.dislikes = [];
+        const lIdx = comment.likes.indexOf(userId);
+        const dIdx = comment.dislikes.indexOf(userId);
+        if (lIdx > -1) comment.likes.splice(lIdx, 1);
+        if (dIdx > -1) comment.dislikes.splice(dIdx, 1);
+        else comment.dislikes.push(userId);
+        saveFoods(current);
+      }
       return current[idx];
     }
     throw new Error("Food item not found");
