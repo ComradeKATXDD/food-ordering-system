@@ -226,6 +226,6 @@ export const userService = {
         avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
       };
     }
-    throw new Error("Invalid admin credentials. (Use admin / admin123)");
+    throw new Error("Invalid admin credentials.");
   },
 };
