@@ -157,9 +157,12 @@ const OrdersPage = () => {
                         Delivery Address:
                       </span>
                       <p className="font-semibold text-slate-700 dark:text-slate-300">
-                        {order.customerName} ({order.phone})
+                        {order.customerName}{" "}
+                        {(order.customerPhone || order.phone) ? `(${order.customerPhone || order.phone})` : ""}
                       </p>
-                      <p className="text-slate-500">{order.address}</p>
+                      <p className="text-slate-500">
+                        {order.deliveryAddress || order.address || "Delivery Address Provided at Checkout"}
+                      </p>
                       <p className="text-[#ff6b35] font-semibold mt-1">
                         Payment Method: {order.paymentMethod}
                       </p>

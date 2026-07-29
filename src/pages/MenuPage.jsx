@@ -20,7 +20,7 @@ const MenuPage = () => {
   // Filters state
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const [maxPrice, setMaxPrice] = useState(500);
+  const [maxPrice, setMaxPrice] = useState(5000);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState("popular");
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -67,7 +67,7 @@ const MenuPage = () => {
   const handleResetFilters = () => {
     setActiveCategory("all");
     setSearchQuery("");
-    setMaxPrice(500);
+    setMaxPrice(5000);
     setMinRating(0);
     setSortBy("popular");
     setSearchParams({});
@@ -169,16 +169,16 @@ const MenuPage = () => {
             </div>
             <input
               type="range"
-              min="50"
-              max="500"
-              step="10"
+              min="0"
+              max="5000"
+              step="50"
               value={maxPrice}
               onChange={(e) => setMaxPrice(Number(e.target.value))}
               className="w-full accent-[#ff6b35] cursor-pointer"
             />
             <div className="flex justify-between text-[11px] text-slate-400 font-semibold">
-              <span>{formatCurrency(50)}</span>
-              <span>{formatCurrency(500)}</span>
+              <span>{formatCurrency(0)}</span>
+              <span>{formatCurrency(5000)}</span>
             </div>
           </div>
 
