@@ -97,7 +97,7 @@ const AdminFoodsPage = () => {
       setIsModalOpen(false);
       fetchFoods();
     } catch (err) {
-      addToast("Error saving food item", "error");
+      addToast(err.message || "Error saving food item", "error");
     }
   };
 
@@ -217,15 +217,15 @@ const AdminFoodsPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-xs font-bold text-slate-300 block mb-1">
-                Price ($) *
+                Price (₹) *
               </label>
               <input
                 type="number"
-                step="0.01"
+                step="1"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
-                placeholder="14.99"
+                placeholder="299"
                 className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
               />
             </div>

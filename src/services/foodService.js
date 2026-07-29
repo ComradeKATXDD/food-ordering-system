@@ -120,19 +120,40 @@ export const foodService = {
   async addFood(foodData) {
     try {
       const token = localStorage.getItem("token");
+      const payload = {
+        ...foodData,
+        price: Number(foodData.price) || 199,
+        rating: Number(foodData.rating) || 4.5,
+        ingredients: Array.isArray(foodData.ingredients)
+          ? foodData.ingredients
+          : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
+      };
+
       const res = await fetch(`${API_URL}/foods`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify(foodData),
+        body: JSON.stringify(payload),
       });
+
       if (res.ok) {
-        return await res.json();
+        const created = await res.json();
+        // Update local cache too
+        const current = getStoredFoods();
+        saveFoods([created, ...current]);
+        return created;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(errData.message || "Admin authorization required to add dishes.");
+        }
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
     }
 
     await delay(300);
@@ -142,7 +163,7 @@ export const foodService = {
       id: `food-${Date.now()}`,
       rating: Number(foodData.rating) || 4.5,
       reviewsCount: 1,
-      price: Number(foodData.price) || 9.99,
+      price: Number(foodData.price) || 199,
       ingredients: Array.isArray(foodData.ingredients)
         ? foodData.ingredients
         : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
@@ -155,25 +176,60 @@ export const foodService = {
   async updateFood(id, foodData) {
     try {
       const token = localStorage.getItem("token");
+      const payload = {
+        ...foodData,
+        price: Number(foodData.price),
+        ingredients: Array.isArray(foodData.ingredients)
+          ? foodData.ingredients
+          : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
+      };
+
       const res = await fetch(`${API_URL}/foods/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify(foodData),
+        body: JSON.stringify(payload),
       });
+
       if (res.ok) {
-        return await res.json();
+        const updated = await res.json();
+        // Update local cache too
+        const current = getStoredFoods();
+        const idx = current.findIndex((item) => item.id === id || item._id === id);
+        if (idx !== -1) {
+          current[idx] = { ...current[idx], ...updated };
+          saveFoods(current);
+        } else {
+          saveFoods([updated, ...current]);
+        }
+        return updated;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        if (res.status === 401 || res.status === 403) {
+          throw new Error(errData.message || "Admin authorization required to update dishes.");
+        }
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
     }
 
     await delay(300);
     const current = getStoredFoods();
-    const index = current.findIndex((item) => item.id === id);
-    if (index === -1) throw new Error("Food item not found");
+    const index = current.findIndex((item) => item.id === id || item._id === id);
+    if (index === -1) {
+      const newLocal = {
+        ...foodData,
+        id: id || `food-${Date.now()}`,
+        price: Number(foodData.price),
+        rating: Number(foodData.rating) || 4.5,
+      };
+      saveFoods([newLocal, ...current]);
+      return newLocal;
+    }
 
     const updatedFood = {
       ...current[index],
@@ -199,6 +255,8 @@ export const foodService = {
         },
       });
       if (res.ok) {
+        const current = getStoredFoods();
+        saveFoods(current.filter((item) => item.id !== id && item._id !== id));
         return { success: true, id };
       }
     } catch {
@@ -207,7 +265,7 @@ export const foodService = {
 
     await delay(300);
     const current = getStoredFoods();
-    const updated = current.filter((item) => item.id !== id);
+    const updated = current.filter((item) => item.id !== id && item._id !== id);
     saveFoods(updated);
     return { success: true, id };
   },
