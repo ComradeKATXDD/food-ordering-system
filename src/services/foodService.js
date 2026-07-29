@@ -1,9 +1,9 @@
 import { foods as initialFoods } from "../data/foods";
-import { categories } from "../data/categories";
+import { categories as initialCategories } from "../data/categories";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const FOODS_KEY = "food_ordering_foods";
 
-// Initialize localStorage with initial foods if empty
 const getStoredFoods = () => {
   const stored = localStorage.getItem(FOODS_KEY);
   if (stored) {
@@ -25,7 +25,24 @@ const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const foodService = {
   async getFoods({ category, search, minPrice, maxPrice, minRating, sortBy } = {}) {
-    await delay(300);
+    try {
+      const params = new URLSearchParams();
+      if (category) params.append("category", category);
+      if (search) params.append("search", search);
+      if (minPrice) params.append("minPrice", minPrice);
+      if (maxPrice) params.append("maxPrice", maxPrice);
+      if (minRating) params.append("minRating", minRating);
+      if (sortBy) params.append("sortBy", sortBy);
+
+      const res = await fetch(`${API_URL}/foods?${params.toString()}`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Backend offline fallback to local data
+    }
+
+    await delay(200);
     let result = [...getStoredFoods()];
 
     if (category && category !== "all") {
@@ -38,7 +55,7 @@ export const foodService = {
         (item) =>
           item.name.toLowerCase().includes(q) ||
           item.description.toLowerCase().includes(q) ||
-          item.ingredients.some((ing) => ing.toLowerCase().includes(q))
+          (item.ingredients && item.ingredients.some((ing) => ing.toLowerCase().includes(q)))
       );
     }
 
@@ -70,22 +87,55 @@ export const foodService = {
   },
 
   async getFoodById(id) {
-    await delay(250);
+    try {
+      const res = await fetch(`${API_URL}/foods/${id}`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(200);
     const all = getStoredFoods();
     const found = all.find((item) => item.id === id);
-    if (!found) {
-      throw new Error("Food item not found");
-    }
+    if (!found) throw new Error("Food item not found");
     return found;
   },
 
   async getCategories() {
+    try {
+      const res = await fetch(`${API_URL}/categories`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(150);
-    return categories;
+    return initialCategories;
   },
 
   async addFood(foodData) {
-    await delay(400);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(foodData),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const current = getStoredFoods();
     const newFood = {
       ...foodData,
@@ -95,7 +145,7 @@ export const foodService = {
       price: Number(foodData.price) || 9.99,
       ingredients: Array.isArray(foodData.ingredients)
         ? foodData.ingredients
-        : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean)
+        : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
     };
     const updated = [newFood, ...current];
     saveFoods(updated);
@@ -103,7 +153,24 @@ export const foodService = {
   },
 
   async updateFood(id, foodData) {
-    await delay(400);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(foodData),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const current = getStoredFoods();
     const index = current.findIndex((item) => item.id === id);
     if (index === -1) throw new Error("Food item not found");
@@ -114,7 +181,7 @@ export const foodService = {
       price: Number(foodData.price),
       ingredients: Array.isArray(foodData.ingredients)
         ? foodData.ingredients
-        : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean)
+        : (foodData.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
     };
 
     current[index] = updatedFood;
@@ -123,10 +190,25 @@ export const foodService = {
   },
 
   async deleteFood(id) {
-    await delay(350);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      if (res.ok) {
+        return { success: true, id };
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const current = getStoredFoods();
     const updated = current.filter((item) => item.id !== id);
     saveFoods(updated);
     return { success: true, id };
-  }
+  },
 };

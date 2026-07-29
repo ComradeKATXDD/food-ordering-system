@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "server": "node server/server.js",
+    "server:dev": "npm --prefix server run dev",
+    "seed": "npm --prefix server run seed",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"

@@ -1,5 +1,6 @@
 import { initialOrders } from "../data/orders";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const ORDERS_KEY = "food_ordering_orders";
 
 const getStoredOrders = () => {
@@ -23,11 +24,35 @@ const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const orderService = {
   async getOrders() {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/orders/admin/all`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(300);
     return getStoredOrders();
   },
 
   async getOrdersByUserId(userId) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/orders/my-orders`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(300);
     const all = getStoredOrders();
     return all.filter((order) => order.customerId === userId || order.customerEmail);
@@ -42,7 +67,24 @@ export const orderService = {
   },
 
   async createOrder(orderPayload) {
-    await delay(400);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(orderPayload),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const orders = getStoredOrders();
     const now = new Date();
     const formattedDate = now.toISOString().slice(0, 16).replace("T", " ");
@@ -51,7 +93,7 @@ export const orderService = {
       id: `ORD-${Math.floor(1000 + Math.random() * 9000)}`,
       date: formattedDate,
       status: "Preparing",
-      ...orderPayload
+      ...orderPayload,
     };
 
     const updated = [newOrder, ...orders];
@@ -60,6 +102,23 @@ export const orderService = {
   },
 
   async updateOrderStatus(id, newStatus) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/orders/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(300);
     const orders = getStoredOrders();
     const index = orders.findIndex((o) => o.id === id);
@@ -72,5 +131,5 @@ export const orderService = {
 
   async cancelOrder(id) {
     return this.updateOrderStatus(id, "Cancelled");
-  }
+  },
 };

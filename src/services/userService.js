@@ -1,5 +1,6 @@
 import { initialUsers } from "../data/users";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const USERS_KEY = "food_ordering_users";
 
 const getStoredUsers = () => {
@@ -23,22 +24,64 @@ const delay = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const userService = {
   async getUsers() {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/auth/users`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(300);
     return getStoredUsers();
   },
 
   async getUserById(id) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/auth/profile`, {
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
     await delay(200);
     const users = getStoredUsers();
     return users.find((u) => u.id === id) || null;
   },
 
   async updateProfile(id, updateData) {
-    await delay(400);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/auth/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify(updateData),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        if (updated.token) localStorage.setItem("token", updated.token);
+        return updated;
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const users = getStoredUsers();
     const index = users.findIndex((u) => u.id === id);
     if (index === -1) {
-      // Create user if new
       const newUser = { id, ...updateData };
       users.push(newUser);
       saveUsers(users);
@@ -50,7 +93,21 @@ export const userService = {
   },
 
   async toggleUserBlock(id) {
-    await delay(350);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/auth/users/${id}/toggle-status`, {
+        method: "PATCH",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.user;
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     const users = getStoredUsers();
     const index = users.findIndex((u) => u.id === id);
     if (index === -1) throw new Error("User not found");
@@ -62,7 +119,7 @@ export const userService = {
   },
 
   async deleteUser(id) {
-    await delay(350);
+    await delay(300);
     const users = getStoredUsers();
     const updated = users.filter((u) => u.id !== id);
     saveUsers(updated);
@@ -70,7 +127,27 @@ export const userService = {
   },
 
   async loginCustomer(email, password) {
-    await delay(400);
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      return data;
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
+
+    await delay(300);
     const users = getStoredUsers();
     const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 
@@ -85,17 +162,70 @@ export const userService = {
     return found;
   },
 
+  async registerCustomer(userData) {
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Registration failed");
+      }
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      return data;
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
+
+    await delay(300);
+    const users = getStoredUsers();
+    const newUser = {
+      id: `user-${Date.now()}`,
+      role: "customer",
+      status: "Active",
+      ordersCount: 0,
+      totalSpent: 0,
+      ...userData,
+    };
+    users.push(newUser);
+    saveUsers(users);
+    return newUser;
+  },
+
   async loginAdmin(username, password) {
-    await delay(400);
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: username.includes("@") ? username : `${username}@example.com`, password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.role === "admin") {
+          if (data.token) localStorage.setItem("token", data.token);
+          return data;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(300);
     if (username === "admin" && password === "admin123") {
       return {
         id: "admin-1",
         name: "System Administrator",
-        email: "admin@feastdash.com",
+        email: "admin@example.com",
         role: "admin",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
       };
     }
-    throw new Error("Invalid admin username or password. (Use admin / admin123)");
-  }
+    throw new Error("Invalid admin credentials. (Use admin / admin123)");
+  },
 };
