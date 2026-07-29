@@ -1,0 +1,176 @@
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { FiClock, FiPlus, FiArrowLeft, FiCheck } from "react-icons/fi";
+import RatingStars from "../components/common/RatingStars";
+import QuantitySelector from "../components/common/QuantitySelector";
+import FoodCard from "../components/food/FoodCard";
+import Loader from "../components/common/Loader";
+import { formatCurrency } from "../utils/formatters";
+import { foodService } from "../services/foodService";
+import { useCart } from "../hooks/useCart";
+import { useToast } from "../hooks/useToast";
+
+const FoodDetailsPage = () => {
+  const { id } = useParams();
+  const [food, setFood] = useState(null);
+  const [relatedFoods, setRelatedFoods] = useState([]);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const { addToCart } = useCart();
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    const fetchFoodDetails = async () => {
+      setLoading(true);
+      try {
+        const item = await foodService.getFoodById(id);
+        setFood(item);
+
+        const allFoods = await foodService.getFoods({ category: item.category });
+        setRelatedFoods(allFoods.filter((f) => f.id !== item.id).slice(0, 3));
+      } catch (err) {
+        console.error("Error loading food details", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFoodDetails();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
+  const handleAddToCart = () => {
+    if (!food) return;
+    addToCart(food, quantity);
+    addToast(`Added ${quantity}x ${food.name} to cart!`, "success");
+  };
+
+  if (loading) return <Loader text="Fetching dish details..." />;
+
+  if (!food) {
+    return (
+      <div className="max-w-md mx-auto py-20 text-center space-y-4">
+        <h2 className="text-2xl font-bold">Dish Not Found</h2>
+        <p className="text-xs text-slate-500">The requested food item does not exist or has been removed.</p>
+        <Link to="/menu" className="inline-block px-5 py-2.5 bg-[#ff6b35] text-white text-xs font-bold rounded-xl">
+          Back to Menu
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+      {/* Back button */}
+      <Link
+        to="/menu"
+        className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#ff6b35] transition"
+      >
+        <FiArrowLeft /> Back to Menu
+      </Link>
+
+      {/* Main Details Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+        {/* Left Image Art */}
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800 aspect-[4/3]">
+          <img
+            src={food.image}
+            alt={food.name}
+            className="w-full h-full object-cover"
+          />
+          {food.isPopular && (
+            <span className="absolute top-4 left-4 px-3 py-1 bg-amber-500 text-white font-black text-xs uppercase tracking-wider rounded-full shadow">
+              ★ Bestseller
+            </span>
+          )}
+        </div>
+
+        {/* Right Info */}
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <span className="text-xs font-extrabold text-[#ff6b35] uppercase tracking-widest">
+              {food.category}
+            </span>
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white">
+              {food.name}
+            </h1>
+            <div className="flex items-center gap-4 pt-1">
+              <RatingStars rating={food.rating} reviewsCount={food.reviewsCount} size={16} />
+              <span className="text-slate-300 dark:text-slate-700">|</span>
+              <span className="flex items-center gap-1 text-xs font-semibold text-slate-500">
+                <FiClock className="text-[#ff6b35]" /> {food.prepTime || "20 min prep"}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-3xl font-black text-slate-900 dark:text-white">
+            {formatCurrency(food.price)}
+          </div>
+
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+            {food.description}
+          </p>
+
+          {/* Ingredients list */}
+          {food.ingredients && food.ingredients.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400">
+                Fresh Ingredients & Toppings:
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {food.ingredients.map((ing, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold"
+                  >
+                    <FiCheck className="text-emerald-500" /> {ing}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Add to Cart Actions */}
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4">
+            <QuantitySelector
+              quantity={quantity}
+              onIncrease={() => setQuantity(quantity + 1)}
+              onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
+              size="lg"
+            />
+
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 min-w-[200px] flex items-center justify-center gap-2 py-3.5 bg-[#ff6b35] hover:bg-[#e85a24] text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-orange-500/30 transition active:scale-95"
+            >
+              <FiPlus size={18} /> Add to Cart — {formatCurrency(food.price * quantity)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Related Foods */}
+      {relatedFoods.length > 0 && (
+        <section className="space-y-6 pt-12 border-t border-slate-200 dark:border-slate-800">
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#ff6b35]">
+              Similar Flavor Profiles
+            </span>
+            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white">
+              You Might Also Enjoy
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {relatedFoods.map((rel) => (
+              <FoodCard key={rel.id} food={rel} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
+
+export default FoodDetailsPage;
