@@ -42,8 +42,19 @@ export const SiteThemeProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
+  // Apply Custom Background Image directly to Body when active
+  useEffect(() => {
+    if (settings.enabled && settings.bgPattern === "custom" && settings.customBgImageUrl) {
+      document.body.style.backgroundImage = `url("${settings.customBgImageUrl}")`;
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundAttachment = "fixed";
+      document.body.style.backgroundPosition = "center";
+    } else {
+      document.body.style.backgroundImage = "none";
+    }
+  }, [settings]);
+
   const updateSiteSettings = async (newSettings) => {
-    // Instant local UI state update
     const merged = { ...settings, ...newSettings };
     setSettings(merged);
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
@@ -64,9 +75,6 @@ export const SiteThemeProvider = ({ children }) => {
         setSettings(updated);
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
         return updated;
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        console.warn("Server settings update notice:", errData.message);
       }
     } catch (err) {
       console.warn("Backend offline, updated site theme locally:", err);
@@ -81,28 +89,23 @@ export const SiteThemeProvider = ({ children }) => {
         {/* Global Ambient Background Effects Overlay */}
         {settings.enabled && (
           <>
-            {/* Edge Glow Vignette Effect */}
+            {/* Soft, Subtle Viewport Edge Glow (No thick border lines) */}
             {settings.edgeEffects && (
-              <div className="pointer-events-none fixed inset-0 z-[99] border-[6px] border-[#ff6b35]/30 shadow-[inset_0_0_120px_rgba(255,107,53,0.3)] dark:shadow-[inset_0_0_150px_rgba(255,107,53,0.4)] transition-all duration-500" />
+              <div className="pointer-events-none fixed inset-0 z-[99] shadow-[inset_0_0_50px_rgba(255,107,53,0.12)] dark:shadow-[inset_0_0_70px_rgba(255,107,53,0.18)] transition-all duration-500" />
             )}
 
-            {/* Background Image / Pattern Overlay */}
-            {settings.bgPattern === "custom" && settings.customBgImageUrl ? (
-              <div
-                className="pointer-events-none fixed inset-0 z-[-1] opacity-20 dark:opacity-30 bg-cover bg-center bg-fixed transition-all duration-500"
-                style={{ backgroundImage: `url("${settings.customBgImageUrl}")` }}
-              />
-            ) : settings.bgPattern === "warm-glow" ? (
-              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-orange-500/10 to-orange-950/20 transition-all duration-500" />
+            {/* Background Pattern Presets Floating Overlay */}
+            {settings.bgPattern === "warm-glow" ? (
+              <div className="pointer-events-none fixed inset-0 z-[1] opacity-60 dark:opacity-40 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/15 via-orange-500/5 to-transparent transition-all duration-500" />
             ) : settings.bgPattern === "food-doodles" ? (
               <div
-                className="pointer-events-none fixed inset-0 z-[-1] opacity-15 dark:opacity-25 bg-repeat bg-[length:350px_350px] transition-all duration-500"
+                className="pointer-events-none fixed inset-0 z-[1] opacity-10 dark:opacity-15 bg-repeat bg-[length:350px_350px] mix-blend-multiply dark:mix-blend-overlay transition-all duration-500"
                 style={{
                   backgroundImage: `url("https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80")`,
                 }}
               />
             ) : settings.bgPattern === "spicy-vignette" ? (
-              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-600/15 via-orange-500/20 to-amber-900/30 transition-all duration-500" />
+              <div className="pointer-events-none fixed inset-0 z-[1] opacity-50 dark:opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/10 via-orange-500/10 to-amber-900/20 transition-all duration-500" />
             ) : null}
           </>
         )}
