@@ -152,7 +152,11 @@ export const updateUserProfile = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password");
-    res.json(users);
+    const mappedUsers = users.map((u) => ({
+      ...u.toObject(),
+      id: u._id.toString(),
+    }));
+    res.json(mappedUsers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -164,9 +168,28 @@ export const toggleUserStatus = async (req, res) => {
     if (user) {
       user.status = user.status === "Active" ? "Blocked" : "Active";
       await user.save();
-      res.json({ message: `User status changed to ${user.status}`, user });
+      res.json({
+        ...user.toObject(),
+        id: user._id.toString(),
+        message: `User status changed to ${user.status}`,
+      });
     } else {
       res.status(404).json({ message: "User not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (user) {
+      await user.deleteOne();
+      res.json({ message: "Customer account removed successfully" });
+    } else {
+      await User.deleteOne({ _id: req.params.id });
+      res.json({ message: "Customer account removed successfully" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });

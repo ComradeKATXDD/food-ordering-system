@@ -68,7 +68,7 @@ const CustomerTable = ({ customers, onToggleBlock, onDelete }) => {
               <td className="py-3.5 px-5 text-right">
                 <div className="flex items-center justify-end gap-2">
                   <button
-                    onClick={() => onToggleBlock(user.id)}
+                    onClick={() => onToggleBlock(user.id || user._id)}
                     className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-xl transition ${
                       user.status === "Active"
                         ? "text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40"
@@ -87,7 +87,7 @@ const CustomerTable = ({ customers, onToggleBlock, onDelete }) => {
                   </button>
 
                   <button
-                    onClick={() => onDelete(user.id)}
+                    onClick={() => onDelete(user.id || user._id)}
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition"
                     title="Delete Customer"
                   >

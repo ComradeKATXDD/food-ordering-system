@@ -101,15 +101,14 @@ export const userService = {
       });
       if (res.ok) {
         const data = await res.json();
-        return data.user;
+        return data.user || data;
       }
     } catch {
       // Fallback
     }
 
-    await delay(300);
     const users = getStoredUsers();
-    const index = users.findIndex((u) => u.id === id);
+    const index = users.findIndex((u) => u.id === id || u._id === id);
     if (index === -1) throw new Error("User not found");
 
     const currentStatus = users[index].status;
@@ -119,9 +118,30 @@ export const userService = {
   },
 
   async deleteUser(id) {
-    await delay(300);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/auth/users/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: token ? `Bearer ${token}` : "" },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const users = getStoredUsers();
+        saveUsers(users.filter((u) => u.id !== id && u._id !== id));
+        return data;
+      }
+      const errData = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        throw new Error(errData.message || "Admin authorization required to delete customers.");
+      }
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
+
     const users = getStoredUsers();
-    const updated = users.filter((u) => u.id !== id);
+    const updated = users.filter((u) => u.id !== id && u._id !== id);
     saveUsers(updated);
     return { success: true, id };
   },
