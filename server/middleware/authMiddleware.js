@@ -19,6 +19,19 @@ export const protect = async (req, res, next) => {
   }
 };
 
+export const protectOptional = async (req, res, next) => {
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+    try {
+      const token = req.headers.authorization.split(" ")[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "super_secret_jwt_key_food_ordering_2026");
+      req.user = await User.findById(decoded.id).select("-password");
+    } catch (error) {
+      // Optional token failed, ignore
+    }
+  }
+  next();
+};
+
 export const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     next();

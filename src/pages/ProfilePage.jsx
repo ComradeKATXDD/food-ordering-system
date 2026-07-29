@@ -133,28 +133,6 @@ const ProfilePage = () => {
                   className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
                 />
               </div>
-
-              <div>
-                <span className="text-[11px] text-slate-400 font-semibold block mb-2">
-                  Or pick a preset avatar:
-                </span>
-                <div className="flex items-center gap-3 overflow-x-auto pb-1">
-                  {presetAvatars.map((url, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, avatar: url })}
-                      className={`w-12 h-12 rounded-full overflow-hidden border-2 shrink-0 transition ${
-                        formData.avatar === url
-                          ? "border-[#ff6b35] scale-110 shadow-md"
-                          : "border-slate-200 dark:border-slate-700 hover:border-[#ff6b35]"
-                      }`}
-                    >
-                      <img src={url} alt="Preset avatar" className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

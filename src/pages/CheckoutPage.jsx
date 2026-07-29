@@ -45,19 +45,22 @@ const CheckoutPage = () => {
     setLoading(true);
     try {
       const orderPayload = {
-        customerId: user?.id || `user-${Date.now()}`,
+        customerId: user?.id || user?._id || `user-${Date.now()}`,
         customerName: formData.name,
-        customerEmail: formData.email,
-        phone: formData.phone,
+        customerEmail: formData.email || user?.email,
+        customerPhone: formData.phone,
+        deliveryAddress: formData.address,
         address: formData.address,
         items: cartItems.map((item) => ({
-          id: item.id,
+          food: item.id || item._id,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
           image: item.image,
         })),
-        amount: grandTotal,
+        totalAmount: grandTotal,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
         paymentMethod: paymentMethod,
       };
 
