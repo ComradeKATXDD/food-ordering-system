@@ -11,9 +11,7 @@ const ProfilePage = () => {
 
   const [themeForm, setThemeForm] = useState({
     enabled: settings?.enabled ?? true,
-    bgPattern: settings?.bgPattern || "warm-glow",
     edgeEffects: settings?.edgeEffects ?? true,
-    customBgImageUrl: settings?.customBgImageUrl || "",
   });
   const [savingTheme, setSavingTheme] = useState(false);
 
@@ -21,9 +19,7 @@ const ProfilePage = () => {
     if (settings) {
       setThemeForm({
         enabled: settings.enabled ?? true,
-        bgPattern: settings.bgPattern || "warm-glow",
         edgeEffects: settings.edgeEffects ?? true,
-        customBgImageUrl: settings.customBgImageUrl || "",
       });
     }
   }, [settings]);
@@ -295,9 +291,9 @@ const ProfilePage = () => {
                 setSavingTheme(true);
                 try {
                   await updateSiteSettings(themeForm);
-                  addToast("Global site aesthetic & vibes updated for all visitors!", "success");
+                  addToast("Global site ambient glow settings updated!", "success");
                 } catch (err) {
-                  addToast("Failed to save global theme", "error");
+                  addToast("Failed to save ambient settings", "error");
                 } finally {
                   setSavingTheme(false);
                 }
@@ -310,7 +306,7 @@ const ProfilePage = () => {
                     Super Admin Controls
                   </span>
                   <h3 className="text-lg font-black flex items-center gap-2 mt-1">
-                    <FiSliders className="text-[#ff6b35]" /> Global Site Aesthetic & Vibes Customizer
+                    <FiSliders className="text-[#ff6b35]" /> Ambient Viewport Edge Glow Customizer
                   </h3>
                 </div>
 
@@ -322,61 +318,29 @@ const ProfilePage = () => {
                     className="accent-[#ff6b35]"
                   />
                   <span className="text-xs font-bold">
-                    {themeForm.enabled ? "Master Theme ON" : "Theme OFF"}
+                    {themeForm.enabled ? "Glow Effect ON" : "Glow Effect OFF"}
                   </span>
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-2">
-                    Background Pattern Vibe
-                  </label>
-                  <select
-                    value={themeForm.bgPattern}
-                    onChange={(e) => setThemeForm({ ...themeForm, bgPattern: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
-                  >
-                    <option value="warm-glow">✨ Warm Radial Culinary Glow</option>
-                    <option value="food-doodles">🍕 Faint Food & Doodles Overlay</option>
-                    <option value="spicy-vignette">🌶️ Spicy Red-Amber Vignette</option>
-                    <option value="custom">🖼️ Custom Background Image URL</option>
-                    <option value="none">🚫 Plain (No Pattern)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-2">
-                    Ambient Viewport Edge Glow
-                  </label>
-                  <label className="flex items-center gap-3 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={themeForm.edgeEffects}
-                      onChange={(e) => setThemeForm({ ...themeForm, edgeEffects: e.target.checked })}
-                      className="accent-[#ff6b35] w-4 h-4"
-                    />
-                    <span className="text-xs font-semibold">
-                      Enable Warm Edge Border Glow
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {themeForm.bgPattern === "custom" && (
-                <div>
-                  <label className="text-xs font-bold text-slate-300 block mb-1">
-                    Custom Faint Wallpaper Image URL
-                  </label>
+              <div className="space-y-4">
+                <label className="flex items-center gap-3 px-4 py-3 bg-slate-800/80 border border-slate-700 rounded-2xl cursor-pointer">
                   <input
-                    type="url"
-                    value={themeForm.customBgImageUrl}
-                    onChange={(e) => setThemeForm({ ...themeForm, customBgImageUrl: e.target.value })}
-                    placeholder="https://images.unsplash.com/your-faint-background.jpg"
-                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                    type="checkbox"
+                    checked={themeForm.edgeEffects}
+                    onChange={(e) => setThemeForm({ ...themeForm, edgeEffects: e.target.checked })}
+                    className="accent-[#ff6b35] w-4 h-4"
                   />
-                </div>
-              )}
+                  <div>
+                    <span className="text-xs font-bold block text-white">
+                      Enable Warm Ambient Edge Vignette
+                    </span>
+                    <span className="text-[11px] text-slate-400 block">
+                      Displays a subtle warm culinary glow along the edges of the website for all visitors.
+                    </span>
+                  </div>
+                </label>
+              </div>
 
               <div className="pt-2 flex justify-end">
                 <button
@@ -384,7 +348,7 @@ const ProfilePage = () => {
                   disabled={savingTheme}
                   className="px-6 py-3 bg-[#ff6b35] hover:bg-[#e85a24] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/30 transition active:scale-95 disabled:opacity-50"
                 >
-                  {savingTheme ? "Applying..." : "Save & Apply Global Site Theme"}
+                  {savingTheme ? "Applying..." : "Save Ambient Glow Settings"}
                 </button>
               </div>
             </form>

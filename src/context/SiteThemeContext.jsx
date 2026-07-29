@@ -5,9 +5,7 @@ const SETTINGS_KEY = "food_ordering_site_settings";
 
 const defaultSettings = {
   enabled: true,
-  bgPattern: "warm-glow",
   edgeEffects: true,
-  customBgImageUrl: "",
 };
 
 const SiteThemeContext = createContext(null);
@@ -42,18 +40,6 @@ export const SiteThemeProvider = ({ children }) => {
     fetchSettings();
   }, []);
 
-  // Apply Custom Background Image directly to Body when active
-  useEffect(() => {
-    if (settings.enabled && settings.bgPattern === "custom" && settings.customBgImageUrl) {
-      document.body.style.backgroundImage = `url("${settings.customBgImageUrl}")`;
-      document.body.style.backgroundSize = "cover";
-      document.body.style.backgroundAttachment = "fixed";
-      document.body.style.backgroundPosition = "center";
-    } else {
-      document.body.style.backgroundImage = "none";
-    }
-  }, [settings]);
-
   const updateSiteSettings = async (newSettings) => {
     const merged = { ...settings, ...newSettings };
     setSettings(merged);
@@ -86,28 +72,9 @@ export const SiteThemeProvider = ({ children }) => {
   return (
     <SiteThemeContext.Provider value={{ settings, updateSiteSettings, fetchSettings }}>
       <div className="relative min-h-screen">
-        {/* Global Ambient Background Effects Overlay */}
-        {settings.enabled && (
-          <>
-            {/* Soft, Subtle Viewport Edge Glow (No thick border lines) */}
-            {settings.edgeEffects && (
-              <div className="pointer-events-none fixed inset-0 z-[99] shadow-[inset_0_0_50px_rgba(255,107,53,0.12)] dark:shadow-[inset_0_0_70px_rgba(255,107,53,0.18)] transition-all duration-500" />
-            )}
-
-            {/* Background Pattern Presets Floating Overlay */}
-            {settings.bgPattern === "warm-glow" ? (
-              <div className="pointer-events-none fixed inset-0 z-[1] opacity-60 dark:opacity-40 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-400/15 via-orange-500/5 to-transparent transition-all duration-500" />
-            ) : settings.bgPattern === "food-doodles" ? (
-              <div
-                className="pointer-events-none fixed inset-0 z-[1] opacity-10 dark:opacity-15 bg-repeat bg-[length:350px_350px] mix-blend-multiply dark:mix-blend-overlay transition-all duration-500"
-                style={{
-                  backgroundImage: `url("https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80")`,
-                }}
-              />
-            ) : settings.bgPattern === "spicy-vignette" ? (
-              <div className="pointer-events-none fixed inset-0 z-[1] opacity-50 dark:opacity-30 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/10 via-orange-500/10 to-amber-900/20 transition-all duration-500" />
-            ) : null}
-          </>
+        {/* Global Ambient Viewport Edge Glow Effect */}
+        {settings.enabled && settings.edgeEffects && (
+          <div className="pointer-events-none fixed inset-0 z-[99] shadow-[inset_0_0_80px_rgba(255,107,53,0.22)] dark:shadow-[inset_0_0_100px_rgba(255,107,53,0.28)] transition-all duration-500" />
         )}
 
         {children}
