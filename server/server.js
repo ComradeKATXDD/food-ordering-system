@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import foodRoutes from "./routes/foodRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import settingsRoutes from "./routes/settingsRoutes.js";
 
 // Connect to MongoDB
 connectDB();
@@ -23,6 +24,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/orders", orderRoutes);
+app.use("/api/settings", settingsRoutes);
 
 // Root Health Check Route
 app.get("/", (req, res) => {

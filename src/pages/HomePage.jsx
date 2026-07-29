@@ -9,11 +9,14 @@ import {
   FiClock,
   FiShield,
   FiHeart,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 import CategoryFilter from "../components/food/CategoryFilter";
 import FoodCard from "../components/food/FoodCard";
 import SkeletonCard from "../components/common/SkeletonCard";
 import { foodService } from "../services/foodService";
+import { formatCurrency } from "../utils/formatters";
 
 const HomePage = () => {
   const [categories, setCategories] = useState([]);
@@ -21,7 +24,39 @@ const HomePage = () => {
   const [popularFoods, setPopularFoods] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [slideIndex, setSlideIndex] = useState(0);
   const navigate = useNavigate();
+
+  const heroSlides = featuredFoods.length > 0 ? featuredFoods : [
+    {
+      _id: "f1",
+      id: "f1",
+      name: "Truffle Mushroom Pizza",
+      price: 399,
+      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+      _id: "f2",
+      id: "f2",
+      name: "Royal Paneer Tikka Masala",
+      price: 329,
+      image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=1000&q=80",
+    },
+    {
+      _id: "f3",
+      id: "f3",
+      name: "Smokey BBQ Gourmet Burger",
+      price: 249,
+      image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=1000&q=80",
+    },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSlideIndex((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,25 +145,69 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Right Image Art */}
+            {/* Right Image Art - Dynamic Featured Dish Slideshow Carousel */}
             <div className="relative flex justify-center">
-              <div className="relative w-full max-w-lg aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-orange-500/20 border-4 border-white dark:border-slate-800">
-                <img
-                  src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1000&q=80"
-                  alt="Delicious gourmet food spread"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-[#ff6b35] block">Special Treat</span>
-                    <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                      Truffle Mushroom Pizza
-                    </h4>
+              <div className="relative w-full max-w-lg aspect-square rounded-3xl overflow-hidden shadow-2xl shadow-orange-500/20 border-4 border-white dark:border-slate-800 group">
+                {heroSlides.map((slide, idx) => (
+                  <div
+                    key={slide._id || slide.id || idx}
+                    className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                      idx === slideIndex ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                    }`}
+                  >
+                    <img
+                      src={slide.image}
+                      alt={slide.name}
+                      className="w-full h-full object-cover scale-105 transition-transform duration-1000"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+                    <div className="absolute bottom-6 left-6 right-6 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-white/20 shadow-xl flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-[#ff6b35] uppercase tracking-wider block">
+                          Special Treat 🔥
+                        </span>
+                        <Link
+                          to={`/food/${slide.id || slide._id}`}
+                          className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white hover:text-[#ff6b35] transition line-clamp-1"
+                        >
+                          {slide.name}
+                        </Link>
+                      </div>
+                      <span className="px-3.5 py-2 bg-[#ff6b35] text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md shrink-0">
+                        {formatCurrency(slide.price)}
+                      </span>
+                    </div>
                   </div>
-                  <span className="px-3 py-1.5 bg-[#ff6b35] text-white font-extrabold text-xs rounded-xl shadow">
-                    $18.99
-                  </span>
+                ))}
+
+                {/* Left / Right Carousel Controls */}
+                <button
+                  onClick={() => setSlideIndex((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
+                  className="z-20 absolute left-3 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-[#ff6b35] text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition duration-300"
+                  aria-label="Previous Slide"
+                >
+                  <FiChevronLeft size={20} />
+                </button>
+                <button
+                  onClick={() => setSlideIndex((prev) => (prev + 1) % heroSlides.length)}
+                  className="z-20 absolute right-3 top-1/2 -translate-y-1/2 p-2.5 bg-black/40 hover:bg-[#ff6b35] text-white rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition duration-300"
+                  aria-label="Next Slide"
+                >
+                  <FiChevronRight size={20} />
+                </button>
+
+                {/* Indicator Dots */}
+                <div className="z-20 absolute top-4 right-4 flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                  {heroSlides.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSlideIndex(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        idx === slideIndex ? "w-5 bg-[#ff6b35]" : "w-2 bg-white/60 hover:bg-white"
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>

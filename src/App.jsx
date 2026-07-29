@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
+import { SiteThemeProvider } from "./context/SiteThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { ToastProvider } from "./context/ToastContext";
@@ -30,43 +31,45 @@ import AdminCustomersPage from "./pages/AdminCustomersPage";
 function App() {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <CartProvider>
-          <ToastProvider>
-            <BrowserRouter>
-              <Routes>
-                {/* Main Storefront Layout */}
-                <Route path="/" element={<MainLayout />}>
-                  <Route index element={<HomePage />} />
-                  <Route path="menu" element={<MenuPage />} />
-                  <Route path="food/:id" element={<FoodDetailsPage />} />
-                  <Route path="cart" element={<CartPage />} />
-                  <Route path="checkout" element={<CheckoutPage />} />
-                  <Route path="orders" element={<OrdersPage />} />
-                  <Route path="profile" element={<ProfilePage />} />
-                  <Route path="login" element={<LoginPage />} />
-                  <Route path="signup" element={<SignupPage />} />
-                </Route>
+      <SiteThemeProvider>
+        <AuthProvider>
+          <CartProvider>
+            <ToastProvider>
+              <BrowserRouter>
+                <Routes>
+                  {/* Main Storefront Layout */}
+                  <Route path="/" element={<MainLayout />}>
+                    <Route index element={<HomePage />} />
+                    <Route path="menu" element={<MenuPage />} />
+                    <Route path="food/:id" element={<FoodDetailsPage />} />
+                    <Route path="cart" element={<CartPage />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
+                    <Route path="orders" element={<OrdersPage />} />
+                    <Route path="profile" element={<ProfilePage />} />
+                    <Route path="login" element={<LoginPage />} />
+                    <Route path="signup" element={<SignupPage />} />
+                  </Route>
 
-                {/* Dedicated Admin Login Page */}
-                <Route path="/admin/login" element={<AdminLoginPage />} />
+                  {/* Dedicated Admin Login Page */}
+                  <Route path="/admin/login" element={<AdminLoginPage />} />
 
-                {/* Admin Dashboard Protected Layout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                  <Route path="dashboard" element={<AdminDashboardPage />} />
-                  <Route path="foods" element={<AdminFoodsPage />} />
-                  <Route path="orders" element={<AdminOrdersPage />} />
-                  <Route path="customers" element={<AdminCustomersPage />} />
-                </Route>
+                  {/* Admin Dashboard Protected Layout */}
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<AdminDashboardPage />} />
+                    <Route path="foods" element={<AdminFoodsPage />} />
+                    <Route path="orders" element={<AdminOrdersPage />} />
+                    <Route path="customers" element={<AdminCustomersPage />} />
+                  </Route>
 
-                {/* Fallback wildcard route */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </BrowserRouter>
-          </ToastProvider>
-        </CartProvider>
-      </AuthProvider>
+                  {/* Fallback wildcard route */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </BrowserRouter>
+            </ToastProvider>
+          </CartProvider>
+        </AuthProvider>
+      </SiteThemeProvider>
     </ThemeProvider>
   );
 }

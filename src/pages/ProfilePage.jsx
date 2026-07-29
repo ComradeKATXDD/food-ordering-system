@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiCheck, FiImage, FiCamera } from "react-icons/fi";
+import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiCheck, FiImage, FiCamera, FiSliders } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
+import { useSiteTheme } from "../context/SiteThemeContext";
 
 const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const { addToast } = useToast();
+  const { settings, updateSiteSettings } = useSiteTheme();
+
+  const [themeForm, setThemeForm] = useState({
+    enabled: settings.enabled ?? true,
+    bgPattern: settings.bgPattern || "warm-glow",
+    edgeEffects: settings.edgeEffects ?? true,
+    customBgImageUrl: settings.customBgImageUrl || "",
+  });
+  const [savingTheme, setSavingTheme] = useState(false);
 
   const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
 
@@ -265,6 +275,109 @@ const ProfilePage = () => {
               </button>
             </div>
           </form>
+
+          {/* Super Admin Global Aesthetic & Vibes Control Panel */}
+          {user?.role === "admin" && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setSavingTheme(true);
+                try {
+                  await updateSiteSettings(themeForm);
+                  addToast("Global site aesthetic & vibes updated for all visitors!", "success");
+                } catch (err) {
+                  addToast("Failed to save global theme", "error");
+                } finally {
+                  setSavingTheme(false);
+                }
+              }}
+              className="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-6 sm:p-8 rounded-3xl border border-orange-500/30 space-y-6 shadow-2xl relative overflow-hidden"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                  <span className="text-[11px] font-extrabold text-[#ff6b35] uppercase tracking-widest block">
+                    Super Admin Controls
+                  </span>
+                  <h3 className="text-lg font-black flex items-center gap-2 mt-1">
+                    <FiSliders className="text-[#ff6b35]" /> Global Site Aesthetic & Vibes Customizer
+                  </h3>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer bg-slate-800/80 px-3.5 py-1.5 rounded-full border border-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={themeForm.enabled}
+                    onChange={(e) => setThemeForm({ ...themeForm, enabled: e.target.checked })}
+                    className="accent-[#ff6b35]"
+                  />
+                  <span className="text-xs font-bold">
+                    {themeForm.enabled ? "Master Theme ON" : "Theme OFF"}
+                  </span>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-2">
+                    Background Pattern Vibe
+                  </label>
+                  <select
+                    value={themeForm.bgPattern}
+                    onChange={(e) => setThemeForm({ ...themeForm, bgPattern: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  >
+                    <option value="warm-glow">✨ Warm Radial Culinary Glow</option>
+                    <option value="food-doodles">🍕 Faint Food & Doodles Overlay</option>
+                    <option value="spicy-vignette">🌶️ Spicy Red-Amber Vignette</option>
+                    <option value="custom">🖼️ Custom Background Image URL</option>
+                    <option value="none">🚫 Plain (No Pattern)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-2">
+                    Ambient Viewport Edge Glow
+                  </label>
+                  <label className="flex items-center gap-3 px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={themeForm.edgeEffects}
+                      onChange={(e) => setThemeForm({ ...themeForm, edgeEffects: e.target.checked })}
+                      className="accent-[#ff6b35] w-4 h-4"
+                    />
+                    <span className="text-xs font-semibold">
+                      Enable Warm Edge Border Glow
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              {themeForm.bgPattern === "custom" && (
+                <div>
+                  <label className="text-xs font-bold text-slate-300 block mb-1">
+                    Custom Faint Wallpaper Image URL
+                  </label>
+                  <input
+                    type="url"
+                    value={themeForm.customBgImageUrl}
+                    onChange={(e) => setThemeForm({ ...themeForm, customBgImageUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/your-faint-background.jpg"
+                    className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  />
+                </div>
+              )}
+
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingTheme}
+                  className="px-6 py-3 bg-[#ff6b35] hover:bg-[#e85a24] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/30 transition active:scale-95 disabled:opacity-50"
+                >
+                  {savingTheme ? "Applying..." : "Save & Apply Global Site Theme"}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
