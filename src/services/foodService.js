@@ -8,7 +8,12 @@ const getStoredFoods = () => {
   const stored = localStorage.getItem(FOODS_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return parsed.map((item) => ({
+        ...item,
+        rating: Number(item.rating) || 4.5,
+        price: Number(item.price) || 0,
+      }));
     } catch {
       return initialFoods;
     }

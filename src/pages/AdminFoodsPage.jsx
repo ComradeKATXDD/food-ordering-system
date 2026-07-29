@@ -87,11 +87,17 @@ const AdminFoodsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const payload = {
+        ...formData,
+        price: Number(formData.price) || 0,
+        rating: Number(formData.rating) || 4.5,
+      };
+
       if (editingFood) {
-        await foodService.updateFood(editingFood.id, formData);
+        await foodService.updateFood(editingFood.id || editingFood._id, payload);
         addToast("Food item updated successfully", "success");
       } else {
-        await foodService.addFood(formData);
+        await foodService.addFood(payload);
         addToast("New food item added to menu", "success");
       }
       setIsModalOpen(false);
