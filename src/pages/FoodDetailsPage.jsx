@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { FiClock, FiPlus, FiArrowLeft, FiCheck } from "react-icons/fi";
+import { FiClock, FiPlus, FiArrowLeft, FiCheck, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiSend } from "react-icons/fi";
 import RatingStars from "../components/common/RatingStars";
 import QuantitySelector from "../components/common/QuantitySelector";
 import FoodCard from "../components/food/FoodCard";
 import Loader from "../components/common/Loader";
-import { formatCurrency } from "../utils/formatters";
+import { formatCurrency, formatDate } from "../utils/formatters";
 import { foodService } from "../services/foodService";
 import { useCart } from "../hooks/useCart";
 import { useToast } from "../hooks/useToast";
@@ -18,27 +18,32 @@ const FoodDetailsPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  // Review & Comment Form State
+  const [commentText, setCommentText] = useState("");
+  const [selectedRating, setSelectedRating] = useState(5);
+  const [submittingComment, setSubmittingComment] = useState(false);
+
   const { addToCart } = useCart();
   const { addToast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  const fetchFoodDetails = async () => {
+    try {
+      const item = await foodService.getFoodById(id);
+      setFood(item);
+
+      const allFoods = await foodService.getFoods({ category: item.category });
+      setRelatedFoods(allFoods.filter((f) => f.id !== item.id && f._id !== item._id).slice(0, 3));
+    } catch (err) {
+      console.error("Error loading food details", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchFoodDetails = async () => {
-      setLoading(true);
-      try {
-        const item = await foodService.getFoodById(id);
-        setFood(item);
-
-        const allFoods = await foodService.getFoods({ category: item.category });
-        setRelatedFoods(allFoods.filter((f) => f.id !== item.id).slice(0, 3));
-      } catch (err) {
-        console.error("Error loading food details", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    setLoading(true);
     fetchFoodDetails();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
@@ -54,6 +59,66 @@ const FoodDetailsPage = () => {
     addToast(`Added ${quantity}x ${food.name} to cart!`, "success");
   };
 
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      addToast("Please log in to post a review or comment", "warning");
+      navigate("/login");
+      return;
+    }
+
+    if (!commentText.trim()) {
+      addToast("Please enter your comment or review text", "warning");
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      const updatedFood = await foodService.addComment(food.id || food._id, {
+        rating: selectedRating,
+        text: commentText,
+      });
+      setFood(updatedFood);
+      setCommentText("");
+      setSelectedRating(5);
+      addToast("Your review and rating have been posted to MongoDB!", "success");
+    } catch (err) {
+      addToast(err.message || "Failed to post review", "error");
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleLikeComment = async (commentId) => {
+    if (!isAuthenticated) {
+      addToast("Please log in to react to comments", "warning");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const updatedFood = await foodService.likeComment(food.id || food._id, commentId);
+      setFood(updatedFood);
+    } catch (err) {
+      console.error("Like failed", err);
+    }
+  };
+
+  const handleDislikeComment = async (commentId) => {
+    if (!isAuthenticated) {
+      addToast("Please log in to react to comments", "warning");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const updatedFood = await foodService.dislikeComment(food.id || food._id, commentId);
+      setFood(updatedFood);
+    } catch (err) {
+      console.error("Dislike failed", err);
+    }
+  };
+
   if (loading) return <Loader text="Fetching dish details..." />;
 
   if (!food) {
@@ -67,6 +132,8 @@ const FoodDetailsPage = () => {
       </div>
     );
   }
+
+  const comments = food.comments || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -157,6 +224,162 @@ const FoodDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Customer Ratings & Comments Section */}
+      <section className="space-y-8 pt-12 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[#ff6b35]">
+              Customer Reviews
+            </span>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <FiMessageSquare className="text-[#ff6b35]" /> Dish Ratings & Discussion ({comments.length})
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 px-4 py-2 rounded-2xl text-xs font-bold text-slate-700 dark:text-orange-200">
+            <span>Overall Score:</span>
+            <span className="text-base text-[#ff6b35] font-black">★ {food.rating}</span>
+            <span className="text-slate-400">({food.reviewsCount} reviews)</span>
+          </div>
+        </div>
+
+        {/* Comment Form */}
+        <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+            Leave a Rating & Comment
+          </h3>
+
+          <form onSubmit={handleCommentSubmit} className="space-y-4">
+            {/* 0-5 Star Rating Selector */}
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Your Rating:</span>
+              <div className="flex items-center gap-1.5">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setSelectedRating(star)}
+                    className="p-1 hover:scale-125 transition-transform"
+                  >
+                    <FiStar
+                      size={22}
+                      className={
+                        star <= selectedRating
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-300 dark:text-slate-700"
+                      }
+                    />
+                  </button>
+                ))}
+                <span className="text-xs font-black text-[#ff6b35] ml-2">
+                  {selectedRating} / 5 Stars
+                </span>
+              </div>
+            </div>
+
+            {/* Comment Area */}
+            <div>
+              <textarea
+                rows="3"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder={
+                  isAuthenticated
+                    ? `Share your thoughts on ${food.name}...`
+                    : "Please log in to leave a comment and rating."
+                }
+                disabled={!isAuthenticated || submittingComment}
+                className="w-full p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-semibold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff6b35] disabled:opacity-60"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={!isAuthenticated || submittingComment}
+                className="px-6 py-3 bg-[#ff6b35] hover:bg-[#e85a24] text-white font-extrabold text-xs rounded-xl shadow-lg shadow-orange-500/20 flex items-center gap-2 transition active:scale-95 disabled:opacity-50"
+              >
+                <FiSend /> {submittingComment ? "Posting..." : "Post Review"}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        {/* Comments List */}
+        <div className="space-y-4">
+          {comments.length === 0 ? (
+            <div className="text-center py-10 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-xs text-slate-400">
+              No comments yet for this dish. Be the first to share your review!
+            </div>
+          ) : (
+            comments.map((comment) => {
+              const currentUserId = user?.id || user?._id;
+              const hasLiked = comment.likes?.some((uid) => uid === currentUserId || uid?._id === currentUserId);
+              const hasDisliked = comment.dislikes?.some((uid) => uid === currentUserId || uid?._id === currentUserId);
+
+              return (
+                <div
+                  key={comment._id || comment.id}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3 shadow-sm"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={comment.userAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80"}
+                        alt={comment.userName}
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                      />
+                      <div>
+                        <h4 className="font-bold text-xs text-slate-900 dark:text-white">
+                          {comment.userName}
+                        </h4>
+                        <span className="text-[11px] text-slate-400">
+                          {formatDate(comment.createdAt)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 px-2.5 py-1 rounded-xl text-amber-500 text-xs font-black">
+                      <FiStar className="fill-current" size={13} />
+                      <span>{comment.rating} / 5</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium pl-1">
+                    {comment.text}
+                  </p>
+
+                  {/* Likes / Dislikes Action Buttons */}
+                  <div className="flex items-center gap-4 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-xs">
+                    <button
+                      onClick={() => handleLikeComment(comment._id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition ${
+                        hasLiked
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-emerald-500"
+                      }`}
+                    >
+                      <FiThumbsUp size={14} /> <span>{comment.likes?.length || 0}</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDislikeComment(comment._id)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition ${
+                        hasDisliked
+                          ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-700"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-rose-500"
+                      }`}
+                    >
+                      <FiThumbsDown size={14} /> <span>{comment.dislikes?.length || 0}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
 
       {/* Related Foods */}
       {relatedFoods.length > 0 && (

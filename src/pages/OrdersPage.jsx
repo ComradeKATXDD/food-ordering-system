@@ -83,7 +83,7 @@ const OrdersPage = () => {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => {
-            const canCancel = order.status === "Preparing" || order.status === "Out for Delivery";
+            const canCancel = order.status === "Pending" || order.status === "Preparing" || order.status === "Out for Delivery";
 
             return (
               <div

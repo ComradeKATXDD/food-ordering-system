@@ -203,7 +203,7 @@ export const userService = {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: username.includes("@") ? username : `${username}@example.com`, password }),
+        body: JSON.stringify({ email: username, password }),
       });
       if (res.ok) {
         const data = await res.json();

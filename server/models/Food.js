@@ -1,5 +1,46 @@
 import mongoose from "mongoose";
 
+const commentSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    userName: {
+      type: String,
+      required: true,
+    },
+    userAvatar: {
+      type: String,
+      default: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+    },
+    rating: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 5,
+    },
+    text: {
+      type: String,
+      required: true,
+    },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    dislikes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
 const foodSchema = new mongoose.Schema(
   {
     name: {
@@ -55,6 +96,7 @@ const foodSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    comments: [commentSchema],
   },
   { timestamps: true }
 );

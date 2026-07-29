@@ -98,7 +98,7 @@ export const foodService = {
 
     await delay(200);
     const all = getStoredFoods();
-    const found = all.find((item) => item.id === id);
+    const found = all.find((item) => item.id === id || item._id === id);
     if (!found) throw new Error("Food item not found");
     return found;
   },
@@ -140,7 +140,6 @@ export const foodService = {
 
       if (res.ok) {
         const created = await res.json();
-        // Update local cache too
         const current = getStoredFoods();
         saveFoods([created, ...current]);
         return created;
@@ -195,7 +194,6 @@ export const foodService = {
 
       if (res.ok) {
         const updated = await res.json();
-        // Update local cache too
         const current = getStoredFoods();
         const idx = current.findIndex((item) => item.id === id || item._id === id);
         if (idx !== -1) {
@@ -268,5 +266,101 @@ export const foodService = {
     const updated = current.filter((item) => item.id !== id && item._id !== id);
     saveFoods(updated);
     return { success: true, id };
+  },
+
+  async addComment(foodId, { rating, text }) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods/${foodId}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+        body: JSON.stringify({ rating, text }),
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.message || "Failed to post review");
+    } catch (err) {
+      if (err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
+
+    await delay(300);
+    const current = getStoredFoods();
+    const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
+    if (idx !== -1) {
+      const currentUser = JSON.parse(localStorage.getItem("food_ordering_user") || "{}");
+      const comments = current[idx].comments || [];
+      const newC = {
+        _id: `comment-${Date.now()}`,
+        userName: currentUser.name || "Customer",
+        userAvatar: currentUser.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+        rating: Number(rating),
+        text,
+        likes: [],
+        dislikes: [],
+        createdAt: new Date().toISOString(),
+      };
+      current[idx].comments = [newC, ...comments];
+      current[idx].reviewsCount = current[idx].comments.length;
+      saveFoods(current);
+      return current[idx];
+    }
+    throw new Error("Food item not found");
+  },
+
+  async likeComment(foodId, commentId) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods/${foodId}/comments/${commentId}/like`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(200);
+    const current = getStoredFoods();
+    const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
+    if (idx !== -1) {
+      return current[idx];
+    }
+    throw new Error("Food item not found");
+  },
+
+  async dislikeComment(foodId, commentId) {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/foods/${foodId}/comments/${commentId}/dislike`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Fallback
+    }
+
+    await delay(200);
+    const current = getStoredFoods();
+    const idx = current.findIndex((item) => item.id === foodId || item._id === foodId);
+    if (idx !== -1) {
+      return current[idx];
+    }
+    throw new Error("Food item not found");
   },
 };

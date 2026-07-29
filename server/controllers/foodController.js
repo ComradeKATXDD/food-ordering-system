@@ -95,6 +95,7 @@ export const createFood = async (req, res) => {
       prepTime: prepTime || "15-20 min",
       isPopular: !!isPopular,
       isFeatured: !!isFeatured,
+      comments: [],
     });
 
     const createdFood = await food.save();
@@ -118,7 +119,6 @@ export const updateFood = async (req, res) => {
       food = await Food.findOne({ name: { $regex: req.body.name, $options: "i" } });
     }
 
-    // If still not found, create new food document
     if (!food) {
       food = new Food({
         name: req.body.name || "New Item",
@@ -131,6 +131,7 @@ export const updateFood = async (req, res) => {
           : (req.body.ingredients || "").split(",").map((s) => s.trim()).filter(Boolean),
         isPopular: !!req.body.isPopular,
         isFeatured: !!req.body.isFeatured,
+        comments: [],
       });
     } else {
       food.name = req.body.name || food.name;
@@ -173,6 +174,134 @@ export const deleteFood = async (req, res) => {
       await Food.deleteOne({ _id: req.params.id });
       res.json({ message: "Food item removed successfully" });
     }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Add Rating & Comment to a Food Item
+export const addComment = async (req, res) => {
+  try {
+    const { rating, text } = req.body;
+    let food = null;
+    if (mongoose.Types.ObjectId.isValid(req.params.id)) {
+      food = await Food.findById(req.params.id);
+    }
+    if (!food) {
+      food = await Food.findOne({ name: { $regex: req.params.id, $options: "i" } });
+    }
+
+    if (!food) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    const newComment = {
+      user: req.user._id,
+      userName: req.user.name,
+      userAvatar: req.user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
+      rating: Number(rating) || 5,
+      text: text.trim(),
+      likes: [],
+      dislikes: [],
+    };
+
+    food.comments.unshift(newComment);
+
+    // Recalculate average rating & reviewsCount
+    const totalRatings = food.comments.reduce((acc, c) => acc + c.rating, 0);
+    food.reviewsCount = food.comments.length;
+    food.rating = Number((totalRatings / food.comments.length).toFixed(1));
+
+    await food.save();
+
+    res.status(201).json({
+      ...food.toObject(),
+      id: food._id.toString(),
+    });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+// Toggle Like on a Comment
+export const toggleLikeComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    let food = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      food = await Food.findById(id);
+    }
+    if (!food) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    const comment = food.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const userIdStr = req.user._id.toString();
+    const likeIndex = comment.likes.findIndex((uid) => uid.toString() === userIdStr);
+    const dislikeIndex = comment.dislikes.findIndex((uid) => uid.toString() === userIdStr);
+
+    if (dislikeIndex > -1) {
+      comment.dislikes.splice(dislikeIndex, 1);
+    }
+
+    if (likeIndex > -1) {
+      comment.likes.splice(likeIndex, 1);
+    } else {
+      comment.likes.push(req.user._id);
+    }
+
+    await food.save();
+
+    res.json({
+      ...food.toObject(),
+      id: food._id.toString(),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Toggle Dislike on a Comment
+export const toggleDislikeComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params;
+    let food = null;
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      food = await Food.findById(id);
+    }
+    if (!food) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    const comment = food.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    const userIdStr = req.user._id.toString();
+    const likeIndex = comment.likes.findIndex((uid) => uid.toString() === userIdStr);
+    const dislikeIndex = comment.dislikes.findIndex((uid) => uid.toString() === userIdStr);
+
+    if (likeIndex > -1) {
+      comment.likes.splice(likeIndex, 1);
+    }
+
+    if (dislikeIndex > -1) {
+      comment.dislikes.splice(dislikeIndex, 1);
+    } else {
+      comment.dislikes.push(req.user._id);
+    }
+
+    await food.save();
+
+    res.json({
+      ...food.toObject(),
+      id: food._id.toString(),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
