@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiCheck, FiImage, FiCamera, FiSliders } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
@@ -10,12 +10,23 @@ const ProfilePage = () => {
   const { settings, updateSiteSettings } = useSiteTheme();
 
   const [themeForm, setThemeForm] = useState({
-    enabled: settings.enabled ?? true,
-    bgPattern: settings.bgPattern || "warm-glow",
-    edgeEffects: settings.edgeEffects ?? true,
-    customBgImageUrl: settings.customBgImageUrl || "",
+    enabled: settings?.enabled ?? true,
+    bgPattern: settings?.bgPattern || "warm-glow",
+    edgeEffects: settings?.edgeEffects ?? true,
+    customBgImageUrl: settings?.customBgImageUrl || "",
   });
   const [savingTheme, setSavingTheme] = useState(false);
+
+  useEffect(() => {
+    if (settings) {
+      setThemeForm({
+        enabled: settings.enabled ?? true,
+        bgPattern: settings.bgPattern || "warm-glow",
+        edgeEffects: settings.edgeEffects ?? true,
+        customBgImageUrl: settings.customBgImageUrl || "",
+      });
+    }
+  }, [settings]);
 
   const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
 

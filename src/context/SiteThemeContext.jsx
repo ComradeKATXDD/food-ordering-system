@@ -43,6 +43,11 @@ export const SiteThemeProvider = ({ children }) => {
   }, []);
 
   const updateSiteSettings = async (newSettings) => {
+    // Instant local UI state update
+    const merged = { ...settings, ...newSettings };
+    setSettings(merged);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_URL}/settings`, {
@@ -51,21 +56,22 @@ export const SiteThemeProvider = ({ children }) => {
           "Content-Type": "application/json",
           Authorization: token ? `Bearer ${token}` : "",
         },
-        body: JSON.stringify(newSettings),
+        body: JSON.stringify(merged),
       });
+
       if (res.ok) {
         const updated = await res.json();
         setSettings(updated);
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
         return updated;
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        console.warn("Server settings update notice:", errData.message);
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.warn("Backend offline, updated site theme locally:", err);
     }
 
-    const merged = { ...settings, ...newSettings };
-    setSettings(merged);
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
     return merged;
   };
 
@@ -77,26 +83,26 @@ export const SiteThemeProvider = ({ children }) => {
           <>
             {/* Edge Glow Vignette Effect */}
             {settings.edgeEffects && (
-              <div className="pointer-events-none fixed inset-0 z-[99] shadow-[inset_0_0_80px_rgba(255,107,53,0.15)] dark:shadow-[inset_0_0_100px_rgba(255,107,53,0.2)]" />
+              <div className="pointer-events-none fixed inset-0 z-[99] border-[6px] border-[#ff6b35]/30 shadow-[inset_0_0_120px_rgba(255,107,53,0.3)] dark:shadow-[inset_0_0_150px_rgba(255,107,53,0.4)] transition-all duration-500" />
             )}
 
             {/* Background Image / Pattern Overlay */}
             {settings.bgPattern === "custom" && settings.customBgImageUrl ? (
               <div
-                className="pointer-events-none fixed inset-0 z-[-1] opacity-[0.07] dark:opacity-[0.12] bg-cover bg-center bg-fixed transition-opacity duration-700"
+                className="pointer-events-none fixed inset-0 z-[-1] opacity-20 dark:opacity-30 bg-cover bg-center bg-fixed transition-all duration-500"
                 style={{ backgroundImage: `url("${settings.customBgImageUrl}")` }}
               />
             ) : settings.bgPattern === "warm-glow" ? (
-              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-orange-600/5 dark:from-amber-500/15 dark:to-orange-950/20" />
+              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-orange-500/10 to-orange-950/20 transition-all duration-500" />
             ) : settings.bgPattern === "food-doodles" ? (
               <div
-                className="pointer-events-none fixed inset-0 z-[-1] opacity-[0.05] dark:opacity-[0.09] bg-repeat bg-[length:350px_350px]"
+                className="pointer-events-none fixed inset-0 z-[-1] opacity-15 dark:opacity-25 bg-repeat bg-[length:350px_350px] transition-all duration-500"
                 style={{
                   backgroundImage: `url("https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80")`,
                 }}
               />
             ) : settings.bgPattern === "spicy-vignette" ? (
-              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-500/5 via-orange-500/10 to-amber-600/15" />
+              <div className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-red-600/15 via-orange-500/20 to-amber-900/30 transition-all duration-500" />
             ) : null}
           </>
         )}
