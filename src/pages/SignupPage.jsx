@@ -35,6 +35,7 @@ const SignupPage = () => {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
+        password: formData.password,
         address: "New Registered Address",
       });
       addToast("Account created successfully! Welcome to FeastDash.", "success");

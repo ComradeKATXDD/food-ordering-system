@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { FiClock, FiPlus, FiArrowLeft, FiCheck } from "react-icons/fi";
 import RatingStars from "../components/common/RatingStars";
 import QuantitySelector from "../components/common/QuantitySelector";
@@ -9,6 +9,7 @@ import { formatCurrency } from "../utils/formatters";
 import { foodService } from "../services/foodService";
 import { useCart } from "../hooks/useCart";
 import { useToast } from "../hooks/useToast";
+import { useAuth } from "../hooks/useAuth";
 
 const FoodDetailsPage = () => {
   const { id } = useParams();
@@ -19,6 +20,8 @@ const FoodDetailsPage = () => {
 
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFoodDetails = async () => {
@@ -42,6 +45,11 @@ const FoodDetailsPage = () => {
 
   const handleAddToCart = () => {
     if (!food) return;
+    if (!isAuthenticated) {
+      addToast("Please log in to add items to your cart", "warning");
+      navigate("/login");
+      return;
+    }
     addToCart(food, quantity);
     addToast(`Added ${quantity}x ${food.name} to cart!`, "success");
   };

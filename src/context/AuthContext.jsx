@@ -39,14 +39,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signupCustomer = async (userData) => {
-    const newUser = {
-      id: `user-${Date.now()}`,
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
-      role: "customer",
-      status: "Active",
-      ...userData
-    };
-    await userService.updateProfile(newUser.id, newUser);
+    const newUser = await userService.registerCustomer(userData);
     setUser(newUser);
     return newUser;
   };

@@ -1,18 +1,28 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FiPlus, FiClock, FiHeart } from "react-icons/fi";
 import RatingStars from "../common/RatingStars";
 import { formatCurrency } from "../../utils/formatters";
 import { useCart } from "../../hooks/useCart";
 import { useToast } from "../../hooks/useToast";
+import { useAuth } from "../../hooks/useAuth";
 
 const FoodCard = ({ food }) => {
   const { addToCart } = useCart();
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      addToast("Please log in to add items to your cart", "warning");
+      navigate("/login");
+      return;
+    }
+
     addToCart(food, 1);
     addToast(`Added ${food.name} to your cart!`, "success");
   };

@@ -5,8 +5,8 @@ import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 
 const AdminLoginPage = () => {
-  const [username, setUsername] = useState("admin");
-  const [password, setPassword] = useState("admin123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { loginAdmin } = useAuth();
@@ -40,17 +40,6 @@ const AdminLoginPage = () => {
           </p>
         </div>
 
-        {/* Demo Credentials Alert Box */}
-        <div className="p-4 bg-orange-950/40 border border-orange-800/60 rounded-2xl text-xs space-y-1 text-orange-200">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff6b35]">
-            <FiInfo size={16} /> Predefined Admin Credentials:
-          </div>
-          <p className="pl-5 font-mono text-[11px] text-slate-300">
-            Username: <span className="font-bold text-white">admin</span> <br />
-            Password: <span className="font-bold text-white">admin123</span>
-          </p>
-        </div>
-
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="text-xs font-bold text-slate-300 block mb-1">
@@ -63,7 +52,7 @@ const AdminLoginPage = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                placeholder="admin"
+                placeholder="Enter admin username or email"
                 className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
               />
             </div>
@@ -80,7 +69,7 @@ const AdminLoginPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="admin123"
+                placeholder="••••••••"
                 className="w-full pl-10 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm font-semibold text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
               />
             </div>

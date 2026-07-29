@@ -5,10 +5,12 @@ import CartItem from "../components/cart/CartItem";
 import { formatCurrency } from "../utils/formatters";
 import { useCart } from "../hooks/useCart";
 import { useToast } from "../hooks/useToast";
+import { useAuth } from "../hooks/useAuth";
 
 const CartPage = () => {
   const { cartItems, clearCart, subtotal, deliveryFee, grandTotal, totalItems } = useCart();
   const { addToast } = useToast();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const [coupon, setCoupon] = useState("");
@@ -144,7 +146,14 @@ const CartPage = () => {
             </div>
 
             <button
-              onClick={() => navigate("/checkout")}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  addToast("Please log in to proceed to checkout", "warning");
+                  navigate("/login");
+                } else {
+                  navigate("/checkout");
+                }
+              }}
               className="w-full py-4 bg-[#ff6b35] hover:bg-[#e85a24] text-white font-extrabold text-base rounded-2xl shadow-xl shadow-orange-500/25 flex items-center justify-center gap-2 transition active:scale-98"
             >
               Proceed to Checkout <FiArrowRight />

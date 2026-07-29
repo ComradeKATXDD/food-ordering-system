@@ -48,17 +48,6 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Demo Registered Accounts Hint Box */}
-        <div className="p-3.5 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900/40 rounded-2xl text-xs space-y-1 text-slate-700 dark:text-orange-200">
-          <div className="flex items-center gap-1.5 font-bold text-[#ff6b35]">
-            <FiInfo size={15} /> Sample Registered Demo Accounts:
-          </div>
-          <div className="pl-5 text-[11px] space-y-0.5 font-mono text-slate-600 dark:text-slate-300">
-            <div><span className="font-bold text-[#ff6b35]">sarah.j@example.com</span></div>
-            <div><span className="font-bold text-[#ff6b35]">alex.r@example.com</span></div>
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">

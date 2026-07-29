@@ -9,7 +9,7 @@ import { orderService } from "../services/orderService";
 
 const CheckoutPage = () => {
   const { cartItems, subtotal, deliveryFee, grandTotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
 
@@ -22,6 +22,10 @@ const CheckoutPage = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("UPI");
   const [loading, setLoading] = useState(false);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
   if (cartItems.length === 0) {
     return <Navigate to="/cart" replace />;
