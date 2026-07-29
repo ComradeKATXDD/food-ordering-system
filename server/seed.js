@@ -21,7 +21,7 @@ const sampleFoods = [
   {
     name: "Truffle Mushroom Pizza",
     category: "pizza",
-    price: 18.99,
+    price: 399,
     rating: 4.9,
     reviewsCount: 142,
     prepTime: "20-25 min",
@@ -34,7 +34,7 @@ const sampleFoods = [
   {
     name: "Classic Pepperoni Supreme",
     category: "pizza",
-    price: 16.49,
+    price: 349,
     rating: 4.8,
     reviewsCount: 230,
     prepTime: "15-20 min",
@@ -47,7 +47,7 @@ const sampleFoods = [
   {
     name: "Smoky BBQ Bacon Burger",
     category: "burgers",
-    price: 14.99,
+    price: 199,
     rating: 4.7,
     reviewsCount: 188,
     prepTime: "15-20 min",
@@ -60,7 +60,7 @@ const sampleFoods = [
   {
     name: "Butter Chicken with Garlic Naan",
     category: "indian",
-    price: 17.50,
+    price: 299,
     rating: 4.9,
     reviewsCount: 320,
     prepTime: "25-30 min",
@@ -73,7 +73,7 @@ const sampleFoods = [
   {
     name: "Matcha Lava Cake & Ice Cream",
     category: "desserts",
-    price: 8.99,
+    price: 149,
     rating: 4.8,
     reviewsCount: 95,
     prepTime: "10-15 min",

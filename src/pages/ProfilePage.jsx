@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiCheck } from "react-icons/fi";
+import { FiUser, FiMail, FiPhone, FiMapPin, FiLock, FiCheck, FiImage, FiCamera } from "react-icons/fi";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 
@@ -7,11 +7,14 @@ const ProfilePage = () => {
   const { user, updateProfile } = useAuth();
   const { addToast } = useToast();
 
+  const defaultAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80";
+
   const [formData, setFormData] = useState({
-    name: user?.name || "Sarah Jenkins",
-    email: user?.email || "sarah.j@example.com",
-    phone: user?.phone || "+1 (555) 234-5678",
-    address: user?.address || "742 Evergreen Terrace, Springfield",
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    avatar: user?.avatar || defaultAvatar,
   });
 
   const [passwords, setPasswords] = useState({
@@ -22,12 +25,21 @@ const ProfilePage = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const presetAvatars = [
+    "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
+    "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=300&q=80",
+  ];
+
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       await updateProfile(formData);
-      addToast("Profile details updated successfully!", "success");
+      addToast("Profile & avatar updated successfully in MongoDB!", "success");
     } catch (err) {
       addToast("Failed to update profile.", "error");
     } finally {
@@ -52,27 +64,33 @@ const ProfilePage = () => {
           My Account Profile
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          Manage your personal details, delivery preferences, and account security
+          Manage your profile picture, personal details, delivery address, and security
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Profile Card Sidebar */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 text-center shadow-sm h-fit">
-          <div className="relative w-28 h-28 mx-auto">
+          <div className="relative w-32 h-32 mx-auto">
             <img
-              src={user?.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80"}
+              src={formData.avatar || defaultAvatar}
               alt={formData.name}
               className="w-full h-full rounded-full object-cover border-4 border-[#ff6b35] shadow-lg"
+              onError={(e) => {
+                e.target.src = defaultAvatar;
+              }}
             />
+            <div className="absolute bottom-1 right-1 p-2 bg-[#ff6b35] text-white rounded-full shadow-md">
+              <FiCamera size={14} />
+            </div>
           </div>
 
           <div>
             <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
-              {formData.name}
+              {formData.name || "Customer Account"}
             </h3>
             <span className="text-xs font-semibold text-[#ff6b35] bg-orange-50 dark:bg-orange-950/40 px-3 py-1 rounded-full inline-block mt-1 border border-orange-200 dark:border-orange-800">
-              Valued Customer
+              {user?.role === "admin" ? "System Administrator" : "Valued Customer"}
             </span>
           </div>
 
@@ -81,10 +99,10 @@ const ProfilePage = () => {
               <FiMail className="text-[#ff6b35] shrink-0" /> <span className="truncate">{formData.email}</span>
             </div>
             <div className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300">
-              <FiPhone className="text-[#ff6b35] shrink-0" /> <span>{formData.phone}</span>
+              <FiPhone className="text-[#ff6b35] shrink-0" /> <span>{formData.phone || "Not set"}</span>
             </div>
             <div className="flex items-start gap-2.5 text-slate-600 dark:text-slate-300">
-              <FiMapPin className="text-[#ff6b35] shrink-0 mt-0.5" /> <span>{formData.address}</span>
+              <FiMapPin className="text-[#ff6b35] shrink-0 mt-0.5" /> <span>{formData.address || "Not set"}</span>
             </div>
           </div>
         </div>
@@ -97,8 +115,47 @@ const ProfilePage = () => {
             className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm"
           >
             <h3 className="text-lg font-extrabold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
-              <FiUser className="text-[#ff6b35]" /> Personal Information
+              <FiUser className="text-[#ff6b35]" /> Personal Information & Avatar
             </h3>
+
+            {/* Custom Avatar Selection */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                Profile Picture (Custom Image URL)
+              </label>
+              <div className="relative">
+                <FiImage className="absolute left-3.5 top-3.5 text-slate-400" size={18} />
+                <input
+                  type="url"
+                  value={formData.avatar}
+                  onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+                  placeholder="https://example.com/my-photo.jpg"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                />
+              </div>
+
+              <div>
+                <span className="text-[11px] text-slate-400 font-semibold block mb-2">
+                  Or pick a preset avatar:
+                </span>
+                <div className="flex items-center gap-3 overflow-x-auto pb-1">
+                  {presetAvatars.map((url, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, avatar: url })}
+                      className={`w-12 h-12 rounded-full overflow-hidden border-2 shrink-0 transition ${
+                        formData.avatar === url
+                          ? "border-[#ff6b35] scale-110 shadow-md"
+                          : "border-slate-200 dark:border-slate-700 hover:border-[#ff6b35]"
+                      }`}
+                    >
+                      <img src={url} alt="Preset avatar" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -123,7 +180,8 @@ const ProfilePage = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#ff6b35]"
+                  disabled
+                  className="w-full px-4 py-3 bg-slate-200/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold cursor-not-allowed opacity-80"
                 />
               </div>
             </div>
@@ -144,7 +202,7 @@ const ProfilePage = () => {
 
               <div>
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Default Address
+                  Default Delivery Address
                 </label>
                 <input
                   type="text"

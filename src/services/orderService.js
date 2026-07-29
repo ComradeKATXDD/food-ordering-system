@@ -55,7 +55,13 @@ export const orderService = {
 
     await delay(300);
     const all = getStoredOrders();
-    return all.filter((order) => order.customerId === userId || order.customerEmail);
+    const currentUser = JSON.parse(localStorage.getItem("food_ordering_user") || "{}");
+    return all.filter(
+      (order) =>
+        order.customerId === userId ||
+        order.user === userId ||
+        (currentUser.email && order.customerEmail?.toLowerCase() === currentUser.email?.toLowerCase())
+    );
   },
 
   async getOrderById(id) {

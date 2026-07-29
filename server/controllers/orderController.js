@@ -43,10 +43,18 @@ export const createOrder = async (req, res) => {
 
 export const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    const orders = await Order.find({
+      $or: [
+        { user: req.user._id },
+        { customerEmail: req.user.email.toLowerCase() },
+      ],
+    }).sort({ createdAt: -1 });
+
     const mappedOrders = orders.map((ord) => ({
       ...ord.toObject(),
       id: ord._id.toString(),
+      amount: ord.totalAmount,
+      date: ord.createdAt,
     }));
     res.json(mappedOrders);
   } catch (error) {

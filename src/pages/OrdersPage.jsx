@@ -17,9 +17,14 @@ const OrdersPage = () => {
   const { addToast } = useToast();
 
   const fetchOrders = async () => {
+    if (!user) {
+      setOrders([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const result = await orderService.getOrders();
+      const result = await orderService.getOrdersByUserId(user.id || user._id);
       setOrders(result);
     } catch (err) {
       console.error("Error fetching user orders", err);
