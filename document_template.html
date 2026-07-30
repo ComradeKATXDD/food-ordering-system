@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Food Ordering System - Project Documentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    @page {
+      size: A4;
+      margin: 20mm 18mm 20mm 18mm;
+      @bottom-center {
+        content: counter(page);
+        font-family: 'Inter', sans-serif;
+        font-size: 10pt;
+        color: #555;
+      }
+    }
+
+    @page:first {
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      font-family: 'Inter', Arial, Helvetica, sans-serif;
+      color: #2D3748;
+      line-height: 1.6;
+      font-size: 10.5pt;
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+    }
+
+    /* COVER PAGE */
+    .cover-page {
+      width: 210mm;
+      height: 297mm;
+      padding: 45mm 25mm 30mm 25mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      page-break-after: always;
+      background: #ffffff;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .cover-header {
+      text-align: center;
+      width: 100%;
+    }
+
+    .cover-title-main {
+      font-size: 26pt;
+      font-weight: 800;
+      color: #2563EB;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+    }
+
+    .cover-subtitle {
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1E3A8A;
+      line-height: 1.35;
+      max-width: 80%;
+      margin: 0 auto;
+    }
+
+    .cover-logo-container {
+      margin: 40px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .ict-logo-box {
+      width: 150px;
+      height: 150px;
+      background-color: #008099;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      box-shadow: 0 4px 12px rgba(0,128,153,0.2);
+    }
+
+    .cover-meta {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-top: auto;
+      margin-bottom: 40px;
+      padding-right: 20px;
+    }
+
+    .author-name {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #374151;
+      margin: 2px 0;
+      text-align: right;
+    }
+
+    .cover-footer {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .institution-name {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 5px;
+    }
+
+    .date-stamp {
+      font-size: 10.5pt;
+      font-weight: 600;
+      color: #6B7280;
+    }
+
+    /* DOCUMENT CONTENT */
+    .content-container {
+      padding: 0 5mm;
+    }
+
+    .section-heading {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #2563EB;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 26px;
+      margin-bottom: 12px;
+      page-break-after: avoid;
+    }
+
+    .sub-heading {
+      font-size: 11.5pt;
+      font-weight: 700;
+      color: #1E3A8A;
+      margin-top: 18px;
+      margin-bottom: 8px;
+      page-break-after: avoid;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 12px;
+      text-align: justify;
+      color: #374151;
+    }
+
+    ol, ul {
+      margin-top: 0;
+      margin-bottom: 14px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    /* TABLES */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 9.5pt;
+      page-break-inside: avoid;
+    }
+
+    th {
+      background-color: #2563EB;
+      color: #ffffff;
+      font-weight: 700;
+      text-align: left;
+      padding: 9px 12px;
+      border: 1px solid #2563EB;
+    }
+
+    td {
+      padding: 8px 12px;
+      border: 1px solid #E5E7EB;
+      color: #374151;
+    }
+
+    tr:nth-child(even) {
+      background-color: #F8FAFC;
+    }
+
+    /* CODE & BLOCKS */
+    pre, code {
+      font-family: 'Consolas', 'Courier New', monospace;
+    }
+
+    pre {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      padding: 12px 14px;
+      border-radius: 6px;
+      font-size: 8.5pt;
+      line-height: 1.45;
+      overflow-x: auto;
+      margin: 14px 0;
+      page-break-inside: avoid;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 8.5pt;
+      font-weight: 600;
+      background-color: #EFF6FF;
+      color: #1D4ED8;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .footer-page-num {
+      text-align: center;
+      font-size: 10pt;
+      color: #4B5563;
+      margin-top: 30px;
+      padding-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover-page">
+    <div class="cover-header">
+      <div class="cover-title-main">ICT ACADEMY OF KERALA</div>
+      <div class="cover-subtitle">Full Stack Application Development<br>with ReactJS</div>
+    </div>
+
+    <div class="cover-logo-container">
+      <div class="ict-logo-box">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Outer Box -->
+          <rect x="5" y="5" width="90" height="90" rx="4" stroke="white" stroke-width="4" fill="none"/>
+          <!-- Circuit / iCT Art -->
+          <path d="M20 20 H30 V30 H20 Z" fill="white"/>
+          <path d="M25 40 V80 H75 V30 H45 V40 H65 V70 H35 V40 H25 Z" fill="white"/>
+          <!-- Text -->
+          <text x="50" y="90" text-anchor="middle" fill="white" font-size="7" font-weight="bold" font-family="Arial">ICT ACADEMY</text>
+        </svg>
+      </div>
+    </div>
+
+    <div style="width:100%;">
+      <div class="cover-meta">
+        <div class="author-name">Akash V A</div>
+        <div class="author-name">Anvin M V</div>
+      </div>
+
+      <div class="cover-footer">
+        <div class="institution-name">ICT Academy of Kerala</div>
+        <div class="date-stamp">30.07.2024</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENT BODY -->
+  <div class="content-container">
+
+    <div class="section-heading">EXECUTIVE SUMMARY</div>
+    <p>
+      The <strong>Food Ordering System</strong> is a modern, full-stack web application designed to streamline online food ordering, menu exploration, shopping cart management, and administrative store operations. Developed as part of the <strong>Full Stack Application Development with ReactJS</strong> program at the <strong>ICT Academy of Kerala</strong>, this project addresses the growing demand for fast, intuitive, and responsive digital food ordering solutions.
+    </p>
+    <p>
+      The application leverages a cutting-edge MERN stack architecture comprising <strong>React 19</strong>, <strong>Vite 8</strong>, <strong>Tailwind CSS v4</strong>, <strong>Node.js</strong>, <strong>Express.js</strong>, and <strong>MongoDB with Mongoose ODM</strong>. The client interface features single-page navigation via <strong>React Router v7</strong>, global state management with React Context API (Cart, Auth, Theme, Toast), and a responsive component design system. On the backend, a modular RESTful API provides secure authentication using <strong>JSON Web Tokens (JWT)</strong> and <strong>Bcrypt.js</strong>, role-based authorization for customers and administrators, and persistent CRUD management for foods, categories, user profiles, and order status workflows.
+    </p>
+
+    <div class="section-heading">INTRODUCTION</div>
+    <p>
+      In the contemporary digital service economy, online food delivery platforms have shifted from a consumer luxury to an essential everyday utility. Traditional paper menus and phone-in orders are increasingly replaced by real-time digital interfaces that offer dynamic visual menus, instant customized carts, transparent pricing, and live status updates.
+    </p>
+    <p>
+      The objective of this project is to construct a production-grade, full-stack food ordering platform that bridges customer convenience with store administration efficiency. Built within the context of the ICT Academy of Kerala's internship program, the project provides hands-on implementation of full-stack engineering principles, modern React 19 component patterns, asynchronous state handling, REST API design, and MongoDB database modeling.
+    </p>
+
+    <div class="section-heading">OBJECTIVES</div>
+    <p>Clearly state the objectives of your internship project, outlining what you aimed to achieve and the skills you intended to develop or enhance during the internship:</p>
+    <ol>
+      <li><strong>Build a Responsive Frontend UI:</strong> Develop an intuitive, mobile-friendly interface using React 19, Vite, and Tailwind CSS v4 with support for dynamic dark/light themes.</li>
+      <li><strong>Implement RESTful Backend Services:</strong> Design modular Express.js routes and controllers for managing foods, categories, user accounts, orders, and system settings.</li>
+      <li><strong>Establish Secure Authentication & Role-Based Access (RBAC):</strong> Implement JWT-based authentication with password encryption (Bcrypt.js) for separate Customer and Admin access levels.</li>
+      <li><strong>Architect Global State Management:</strong> Utilize React Context API (<code>AuthContext</code>, <code>CartContext</code>, <code>ThemeContext</code>, <code>ToastContext</code>) to handle user sessions, shopping cart updates, notifications, and application themes cleanly.</li>
+      <li><strong>Develop Customer Ordering Workflow:</strong> Enable multi-criteria menu filtering (category, search, price range, sorting), food item details view, cart manipulations, and structured checkout with order placement.</li>
+      <li><strong>Construct Admin Control Center:</strong> Build a dedicated administrative portal featuring high-level store metrics, food item CRUD operations, customer order status updates, and customer list auditing.</li>
+    </ol>
+
+    <div class="section-heading">SCOPE AND DELIVERABLES</div>
+    <p>
+      Define the scope of your project, detailing the specific tasks, activities, and deliverables that you were responsible for during the internship:
+    </p>
+    <ul>
+      <li><strong>Client Single Page Application (SPA):</strong> Built with React 19, React Router v7, and Tailwind CSS v4 containing 14 page views and modular UI component libraries.</li>
+      <li><strong>Server RESTful Web Service:</strong> Node.js & Express server hosting API endpoints under <code>/api/auth</code>, <code>/api/foods</code>, <code>/api/categories</code>, <code>/api/orders</code>, and <code>/api/settings</code>.</li>
+      <li><strong>Database Schema & ODM Layer:</strong> Mongoose schemas for <code>User</code>, <code>Food</code>, <code>Category</code>, <code>Order</code>, and <code>Settings</code> models with strict validation rules.</li>
+      <li><strong>Database Seeding Tool:</strong> Automated script (<code>seed.js</code>) for populating initial food categories, catalog items, admin access credentials, and sample customer orders.</li>
+      <li><strong>Security Middleware System:</strong> JWT verification and role-guard middleware for protecting admin endpoints and user profile routes.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <div class="section-heading">METHODOLOGY</div>
+    <p>
+      Describe the approach or methodology you followed to execute your project, including any specific techniques, tools, or frameworks that you utilized:
+    </p>
+    <p>
+      The development was executed following an <strong>Agile Iterative Software Engineering Methodology</strong>, structured into modular sprints focusing on component design, database setup, API development, integration, and refinement.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Role / Purpose</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Frontend Framework</strong></td>
+          <td>React 19 + Vite 8</td>
+          <td>High-performance Single Page Application with fast HMR</td>
+        </tr>
+        <tr>
+          <td><strong>Routing</strong></td>
+          <td>React Router v7</td>
+          <td>Declarative browser routing, layouts, and route guards</td>
+        </tr>
+        <tr>
+          <td><strong>Styling System</strong></td>
+          <td>Tailwind CSS v4 + React Icons</td>
+          <td>Utility-first, responsive CSS layout and modern icon set</td>
+        </tr>
+        <tr>
+          <td><strong>State Management</strong></td>
+          <td>React Context API</td>
+          <td>Global providers for Auth, Cart, Theme, and Toasts</td>
+        </tr>
+        <tr>
+          <td><strong>Backend Runtime</strong></td>
+          <td>Node.js + Express.js</td>
+          <td>Asynchronous RESTful Web Service framework</td>
+        </tr>
+        <tr>
+          <td><strong>Database & ODM</strong></td>
+          <td>MongoDB + Mongoose 8</td>
+          <td>NoSQL document database with typed schema modeling</td>
+        </tr>
+        <tr>
+          <td><strong>Security</strong></td>
+          <td>JWT + Bcrypt.js</td>
+          <td>Stateless authentication tokens and password hashing</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-heading">PROJECT ACTIVITIES</div>
+    <p>
+      Provide a detailed breakdown of the activities you undertook during your internship, describing the tasks you performed, the tools or technologies you used, and any challenges or obstacles you encountered:
+    </p>
+    <p><strong>1. Database Schema Design:</strong> Configured Mongoose schemas for users, categories, foods, orders, and store settings with relational references.</p>
+    <p><strong>2. REST API Engineering:</strong> Formatted route handlers for customer authentication, food filtering, order creation, order tracking, and admin dashboard operations.</p>
+    <p><strong>3. Frontend Component & Page Architecture:</strong> Built 14 dedicated user screens across customer storefront and admin management portal.</p>
+    <p><strong>4. Global State Pipeline:</strong> Implemented Context API hooks to manage cart additions, token storage, light/dark themes, and toast notifications.</p>
+
+    <div class="section-heading">RESULTS & FINDINGS</div>
+    <p>
+      Present the results and findings of your internship project, highlighting any key accomplishments, insights, or data analysis that you conducted:
+    </p>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Route Path</th>
+          <th>View / Component</th>
+          <th>Access Level</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>/</code></td>
+          <td>HomePage</td>
+          <td>Public</td>
+          <td>Hero banner, categories, featured items, offers</td>
+        </tr>
+        <tr>
+          <td><code>/menu</code></td>
+          <td>MenuPage</td>
+          <td>Public</td>
+          <td>Full food catalog with search, filters, & sorting</td>
+        </tr>
+        <tr>
+          <td><code>/food/:id</code></td>
+          <td>FoodDetailsPage</td>
+          <td>Public</td>
+          <td>Food specifications, ratings, reviews, & cart add</td>
+        </tr>
+        <tr>
+          <td><code>/cart</code></td>
+          <td>CartPage</td>
+          <td>Customer</td>
+          <td>Cart item list, quantity controls, subtotal summary</td>
+        </tr>
+        <tr>
+          <td><code>/checkout</code></td>
+          <td>CheckoutPage</td>
+          <td>Customer (Auth)</td>
+          <td>Address input, payment selection, & order placement</td>
+        </tr>
+        <tr>
+          <td><code>/orders</code></td>
+          <td>OrdersPage</td>
+          <td>Customer (Auth)</td>
+          <td>User's order history with status timeline tags</td>
+        </tr>
+        <tr>
+          <td><code>/admin/dashboard</code></td>
+          <td>AdminDashboardPage</td>
+          <td>Admin Only</td>
+          <td>Store summary, total revenue, order count charts</td>
+        </tr>
+        <tr>
+          <td><code>/admin/foods</code></td>
+          <td>AdminFoodsPage</td>
+          <td>Admin Only</td>
+          <td>Food item CRUD modal, stock toggle, price edit</td>
+        </tr>
+        <tr>
+          <td><code>/admin/orders</code></td>
+          <td>AdminOrdersPage</td>
+          <td>Admin Only</td>
+          <td>Order fulfillment table & status transition selector</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="section-heading">CONCLUSION</div>
+    <p>
+      Summarize the main outcomes and learnings from your internship project, reflecting on how well you achieved your objectives.
+    </p>
+    <p>
+      The development of the <strong>Food Ordering System</strong> successfully satisfies all project requirements and program objectives set forth by the <strong>ICT Academy of Kerala</strong>. The project demonstrates the execution of modern web development using the MERN stack (MongoDB, Express, React, Node.js) paired with Vite 8, React 19, and Tailwind CSS v4.
+    </p>
+
+    <div class="section-heading">APPENDIX</div>
+    <p>
+      Include any additional supporting documents, samples of your work, project artifacts, or reference materials that are relevant to your internship project:
+    </p>
+
+    <div class="sub-heading">A. User & Order Mongoose Schemas</div>
+<pre><code>// User Schema
+{
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['customer', 'admin'], default: 'customer' }
+}
+
+// Order Schema
+{
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  orderItems: [{ food: mongoose.Schema.Types.ObjectId, quantity: Number, price: Number }],
+  totalPrice: Number,
+  status: { type: String, enum: ['Pending', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'] }
+}</code></pre>
+
+    <div class="sub-heading">B. Setup & Run Instructions</div>
+<pre><code># Install dependencies
+npm install && cd server && npm install
+
+# Seed database & Start server
+npm run seed
+npm run server (Port 5000)
+npm run dev    (Port 5173)</code></pre>
+
+  </div>
+
+</body>
+</html>

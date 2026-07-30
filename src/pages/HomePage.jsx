@@ -303,7 +303,7 @@ const HomePage = () => {
               <span className="px-3 py-1 bg-[#ff6b35] rounded-full text-xs font-bold uppercase tracking-wider">
                 Free Shipping
               </span>
-              <h3 className="text-2xl font-black">Free Delivery On Orders Over $40</h3>
+              <h3 className="text-2xl font-black">Free Delivery On Orders Over ₹500</h3>
               <p className="text-xs text-slate-400">Order from top rated restaurants</p>
             </div>
             <div className="pt-4 z-10">
